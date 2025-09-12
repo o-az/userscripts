@@ -1,0 +1,15 @@
+{
+  "name": "userscripts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "check": "biome check . --fix --unsafe"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
+    "@types/bun": "^1.2.21",
+    "@types/node": "^24.3.1",
+    "typed-query-selector": "^2.12.0",
+    "typescript": "^5.9.2"
+  }
+}
