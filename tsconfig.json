@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext"],
+    "lib": [
+      "ESNext"
+    ],
     "target": "ESNext",
     "module": "Preserve",
     "moduleDetection": "force",
@@ -18,8 +20,18 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
     "checkJs": true,
-    "types": ["bun", "node"],
+    "types": [
+      "bun",
+      "node"
+    ]
   },
-  "include": ["**/*.ts", "**/*.tsx", "**/*.js"],
-  "exclude": ["node_modules", "**/_/**"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/_/**"
+  ]
 }

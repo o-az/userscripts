@@ -1,0 +1,57 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  ACTIONS_RUNNER_DEBUG: true
+
+jobs:
+  publish:
+    name: 'Publish'
+    timeout-minutes: 3
+    runs-on: ['ubuntu-latest']
+    steps:
+      - name: '🔑 Checkout'
+        uses: actions/checkout@v6
+
+      - name: '🐰 Setup Bun'
+        uses: oven-sh/setup-bun@main
+        with:
+          bun-version: latest
+
+      - name: 'Install Dependencies'
+        run: bun install --frozen-lockfile
+
+      - name: Setup Biome
+        uses: biomejs/setup-biome@main
+        with:
+          version: latest
+
+      - name: 'Lint & Check'
+        run: |
+          biome ci .
+          bun check:types
+
+      - name: 'Greasy Fork Sync'
+        env:
+          GREASY_FORK_SECRET: ${{ secrets.GREASY_FORK_SECRET }}
+        run: |
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --data "{\"secret\": \"$GREASY_FORK_SECRET\"}" \
+            "https://greasyfork.org/en/users/1302478-o-az/webhook"
