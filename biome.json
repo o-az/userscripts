@@ -23,18 +23,6 @@
       }
     }
   },
-  "html": {
-    "formatter": {
-      "enabled": true,
-      "lineWidth": 100,
-      "indentWidth": 2,
-      "indentStyle": "space",
-      "bracketSameLine": true,
-      "attributePosition": "auto",
-      "indentScriptAndStyle": true,
-      "selfCloseVoidElements": "never"
-    }
-  },
   "root": true,
   "formatter": {
     "enabled": true,
@@ -66,7 +54,8 @@
         "noExplicitAny": "off",
         "noEmptyInterface": "off",
         "noConfusingVoidType": "off",
-        "noAssignInExpressions": "off"
+        "noAssignInExpressions": "off",
+        "noRedundantUseStrict": "off"
       }
     }
   },

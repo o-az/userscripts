@@ -1,4 +1,4 @@
-name: Publish
+name: Check
 
 on:
   workflow_dispatch:
@@ -17,8 +17,8 @@ env:
   ACTIONS_RUNNER_DEBUG: true
 
 jobs:
-  publish:
-    name: 'Publish'
+  check:
+    name: 'Check'
     timeout-minutes: 3
     runs-on: ['ubuntu-latest']
     steps:
@@ -42,16 +42,3 @@ jobs:
         run: |
           biome ci .
           bun check:types
-
-      - name: 'Greasy Fork Sync'
-        env:
-          GREASY_FORK_SECRET: ${{ secrets.GREASY_FORK_SECRET }}
-        run: |
-          curl \
-            --fail \
-            --silent \
-            --show-error \
-            --request POST \
-            --header "Content-Type: application/json" \
-            --data "{\"secret\": \"$GREASY_FORK_SECRET\"}" \
-            "https://greasyfork.org/en/users/1302478-o-az/webhook"
