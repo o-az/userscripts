@@ -1,15 +1,5 @@
-# userscripts
+# userscripts i use
 
-To install dependencies:
+[npmjs.com to npmx.dev](./src/npm-to-npmx.mjs)
 
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.2.21. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+Redirects from the barely maintained npmjs.com to the more modern npmx.dev.
