@@ -2,7 +2,7 @@
 // @name         Redirect npmjs.com to npmx.dev
 // @namespace    https://npmx.dev/
 // @version      1.1
-// @description  Automatically redirect from npmjs.com to the faster npmx.dev browser. URL paths are fully compatible for package browsing.
+// @description  Automatically redirect from npmjs.com to the faster npmx.dev browser. URL paths are fully compatible for package browsing. Append `?noredirect` to any URL to skip redirection.
 // @author       https://github.com/o-az
 // @match        *://npmjs.com/*
 // @match        *://*.npmjs.com/*
