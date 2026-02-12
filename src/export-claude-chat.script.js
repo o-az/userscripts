@@ -144,7 +144,8 @@
     }
 
     document.addEventListener('click', (e) => {
-      if (!button.contains(e.target) && !menu.contains(e.target)) {
+      const target = /** @type {Node|null} */ (e.target)
+      if (!button.contains(target) && !menu.contains(target)) {
         menu.classList.remove('visible')
       }
     })
@@ -167,10 +168,14 @@
       '[class*="message"]',
     ]
 
+    /** @type {Element[]} */
     let foundElements = []
     for (const selector of messageSelectors) {
-      foundElements = document.querySelectorAll(selector)
-      if (foundElements.length > 0) break
+      const elements = document.querySelectorAll(selector)
+      if (elements.length > 0) {
+        foundElements = Array.from(elements)
+        break
+      }
     }
 
     // Fallback: look for elements with specific attributes
@@ -204,7 +209,7 @@
         el.querySelector('p, .prose, .text') ||
         el
 
-      const text = contentEl.innerText?.trim()
+      const text = /** @type {HTMLElement} */ (contentEl).innerText?.trim()
       if (text && text.length > 0) {
         messages.push({
           role: role === 'user' ? 'You' : 'Claude',
@@ -222,6 +227,9 @@
     }
   }
 
+  /**
+   * @param {{title: string, url: string, exportedAt: string, messages: Array<{role: string, content: string}>}} data
+   */
   function formatAsText(data) {
     let output = `${data.title}\n`
     output += `${'='.repeat(data.title.length)}\n\n`
@@ -363,7 +371,8 @@
         document.querySelector('[data-testid="assistant-message"]') ||
         document.querySelector('.font-claude-message') ||
         document.querySelector('[class*="conversation"]') ||
-        document.querySelector('main')?.querySelectorAll('div').length > 5
+        (document.querySelector('main')?.querySelectorAll('div')?.length ?? 0) >
+          5
 
       if (hasConversation || document.querySelector('main')) {
         clearInterval(checkInterval)
