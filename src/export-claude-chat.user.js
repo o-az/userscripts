@@ -155,67 +155,128 @@
 
   function extractChatContent() {
     const messages = []
+    const processedTexts = new Set()
 
-    // Try multiple selectors for message containers
-    const messageSelectors = [
-      '[data-testid="conversation-turn"]',
+    // Strategy 1: Find user messages by data-testid, then look for nearby Claude responses
+    const userMessageElements = document.querySelectorAll(
       '[data-testid="user-message"]',
-      '[data-testid="assistant-message"]',
-      '.font-claude-message',
-      '[data-message-author-role]',
-      '.message',
-      '.conversation-message',
-      '[class*="message"]',
-    ]
+    )
 
-    /** @type {Element[]} */
-    let foundElements = []
-    for (const selector of messageSelectors) {
-      const elements = document.querySelectorAll(selector)
-      if (elements.length > 0) {
-        foundElements = Array.from(elements)
-        break
+    for (const userEl of userMessageElements) {
+      // Get user message text
+      const userText = /** @type {HTMLElement} */ (userEl).innerText?.trim()
+      if (userText && !processedTexts.has(userText)) {
+        processedTexts.add(userText)
+        messages.push({
+          role: 'You',
+          content: userText,
+          timestamp: new Date().toISOString(),
+        })
       }
-    }
 
-    // Fallback: look for elements with specific attributes
-    if (foundElements.length === 0) {
-      const allElements = document.querySelectorAll('*')
-      for (const el of allElements) {
-        if (
-          el.getAttribute('data-testid')?.includes('message') ||
-          el.getAttribute('data-testid')?.includes('turn') ||
-          el.className?.includes('message') ||
-          el.getAttribute('data-message-author-role')
-        ) {
-          foundElements.push(el)
+      // Find Claude's response - it's typically in a sibling or nearby container
+      // Look for the font-claude-response class
+      let parent = userEl.parentElement
+      let claudeResponse = null
+
+      // Walk up to find container with both messages
+      while (parent && !claudeResponse) {
+        // Check siblings after the user message container
+        let sibling = parent.nextElementSibling
+        while (sibling) {
+          const claudeEl = sibling.querySelector(
+            '.font-claude-response, [class*="font-claude-response"]',
+          )
+          if (claudeEl) {
+            claudeResponse = claudeEl
+            break
+          }
+          // Also check if the sibling itself has the class
+          if (
+            sibling.classList.contains('font-claude-response') ||
+            sibling.matches('[class*="font-claude-response"]')
+          ) {
+            claudeResponse = sibling
+            break
+          }
+          sibling = sibling.nextElementSibling
+        }
+        if (!claudeResponse) {
+          parent = parent.parentElement
+        }
+      }
+
+      if (claudeResponse) {
+        const claudeText = /** @type {HTMLElement} */ (
+          claudeResponse
+        ).innerText?.trim()
+        if (claudeText && !processedTexts.has(claudeText)) {
+          processedTexts.add(claudeText)
+          messages.push({
+            role: 'Claude',
+            content: claudeText,
+            timestamp: new Date().toISOString(),
+          })
         }
       }
     }
 
-    for (const el of foundElements) {
-      const role =
-        el.getAttribute('data-message-author-role') ||
-        (el.getAttribute('data-testid')?.includes('user') ? 'user' : null) ||
-        (el.getAttribute('data-testid')?.includes('assistant')
-          ? 'assistant'
-          : null) ||
-        (el.textContent?.toLowerCase().includes('claude')
-          ? 'assistant'
-          : 'user')
+    // Strategy 2: Directly find all Claude responses that might have been missed
+    const allClaudeResponses = document.querySelectorAll(
+      '.font-claude-response, [class*="font-claude-response"]',
+    )
+    for (const claudeEl of allClaudeResponses) {
+      const text = /** @type {HTMLElement} */ (claudeEl).innerText?.trim()
+      if (text && !processedTexts.has(text)) {
+        // Check this isn't just a fragment we've already captured
+        let isNew = true
+        for (const existing of messages) {
+          if (
+            existing.role === 'Claude' &&
+            existing.content.includes(text.slice(0, 50))
+          ) {
+            isNew = false
+            break
+          }
+        }
+        if (isNew) {
+          processedTexts.add(text)
+          messages.push({
+            role: 'Claude',
+            content: text,
+            timestamp: new Date().toISOString(),
+          })
+        }
+      }
+    }
 
-      const contentEl =
-        el.querySelector('[class*="content"]') ||
-        el.querySelector('p, .prose, .text') ||
-        el
-
-      const text = /** @type {HTMLElement} */ (contentEl).innerText?.trim()
-      if (text && text.length > 0) {
-        messages.push({
-          role: role === 'user' ? 'You' : 'Claude',
-          content: text,
-          timestamp: new Date().toISOString(),
-        })
+    // Strategy 3: Look for streaming response containers (Claude's responses often have data-is-streaming)
+    const streamingContainers = document.querySelectorAll('[data-is-streaming]')
+    for (const container of streamingContainers) {
+      const claudeEl = container.querySelector('.font-claude-response')
+      if (claudeEl) {
+        const text = /** @type {HTMLElement} */ (claudeEl).innerText?.trim()
+        if (text && !processedTexts.has(text)) {
+          // Check if this is new
+          let isNew = true
+          for (const existing of messages) {
+            if (
+              existing.role === 'Claude' &&
+              existing.content.includes(text.slice(0, 50))
+            ) {
+              isNew = false
+              break
+            }
+          }
+          if (isNew) {
+            processedTexts.add(text)
+            messages.push({
+              role: 'Claude',
+              content: text,
+              timestamp: new Date().toISOString(),
+            })
+          }
+        }
       }
     }
 
@@ -262,7 +323,6 @@
 
   function exportAsPDF() {
     const data = extractChatContent()
-    const text = formatAsText(data)
 
     // Create a printable window
     const printWindow = window.open('', '_blank')
@@ -366,11 +426,9 @@
     const checkInterval = setInterval(() => {
       // Look for conversation container or messages
       const hasConversation =
-        document.querySelector('[data-testid="conversation-turn"]') ||
         document.querySelector('[data-testid="user-message"]') ||
-        document.querySelector('[data-testid="assistant-message"]') ||
-        document.querySelector('.font-claude-message') ||
-        document.querySelector('[class*="conversation"]') ||
+        document.querySelector('.font-claude-response') ||
+        document.querySelector('[data-is-streaming]') ||
         (document.querySelector('main')?.querySelectorAll('div')?.length ?? 0) >
           5
 
