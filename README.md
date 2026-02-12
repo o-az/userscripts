@@ -1,14 +1,16 @@
 # userscripts i use
 
-[npmjs.com to npmx.dev](./src/npm-to-npmx.user.js) - [[greasyfork](https://greasyfork.org/en/scripts/565064-redirect-npmjs-com-to-npmx-dev)] - [once-click install](https://raw.githubusercontent.com/o-az/userscripts/main/src/npm-to-npmx.user.js
-c)
+## [npmjs.com to npmx.dev](./src/npm-to-npmx.user.js)
+[[greasyfork](https://greasyfork.org/en/scripts/565064-redirect-npmjs-com-to-npmx-dev)] - [once-click install](https://raw.githubusercontent.com/o-az/userscripts/main/src/npm-to-npmx.user.js)
 
 Redirects from the barely maintained [npmjs.com](https://npmjs.com) to the more modern [npmx.dev](https://npmx.dev).
 
-[Export [claude.ai](https://claude.ai) chat](./src/export-claude-chat.script.js) [[greasyfork.org](export-claude-chat.script.js)] - [one-click-install](https://github.com/o-az/userscripts/tree/main/src/export-claude-chat.script.js?raw=true)
+## [Export Claude Chat](./src/export-claude-chat.script.js)
+[[greasyfork](https://greasyfork.org/en/scripts/566017-export-claude-chat)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-claude-chat.script.js?raw=true)
 
 A button in claude.ai chat that lets you export the chat as PDF or TXT.
-__
+
+____
 
 #### What are userscripts?
 
