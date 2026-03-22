@@ -10,6 +10,9 @@ Redirects from the barely maintained [npmjs.com](https://npmjs.com) to the more 
 
 A button in claude.ai chat that lets you export the chat as PDF or TXT.
 
+## [github.com to better-hub.com]('./src/github-to-better-hub.user.js)
+[[greasyfork](https://greasyfork.org/en/scripts/566018-redirect-github-com-to-better-hub-com)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/github-to-better-hub.user.js?raw=true)
+
 ____
 
 #### What are userscripts?
