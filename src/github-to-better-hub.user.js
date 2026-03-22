@@ -23,28 +23,25 @@
   // Bypass: Add ?noredirect to any URL to skip redirection
   if (search.includes('noredirect')) return
 
-  // Paths that don't have equivalents on npmx.dev
+  // Paths that don't have equivalents on better-hub.com
   const excludedPaths = [
-    '/',
     '/login',
     '/logout',
     '/signup',
     '/settings',
-    '/org/',
-    '/~', // User profiles
-    '/-/', // API/internal routes
-    '/advisories', // Security advisories management
-    '/support',
+    '/notifications',
+    '/new',
+    '/marketplace',
+    '/sponsors',
+    '/organizations',
+    '/codespaces',
+    '/account',
+    '/sessions',
+    '/password_reset',
   ]
 
   // Check if current path should be excluded
   if (excludedPaths.some((path) => pathname.startsWith(path))) return
-
-  // Exclude package management subpages (but allow package view pages)
-  // e.g., /package/react/access, /package/react/collaborators
-  const packageManagementSuffixes = ['/access', '/collaborators', '/admin']
-  if (packageManagementSuffixes.some((suffix) => pathname.endsWith(suffix)))
-    return
 
   // Redirect without adding to browser history
   window.location.replace(`https://better-hub.com${pathname}${search}${hash}`)
