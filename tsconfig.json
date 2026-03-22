@@ -24,7 +24,8 @@
     "checkJs": true,
     "types": [
       "bun",
-      "node"
+      "node",
+      "typed-query-selector/strict"
     ]
   },
   "include": [

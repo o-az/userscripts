@@ -10,12 +10,17 @@ Redirects from the barely maintained [npmjs.com](https://npmjs.com) to the more 
 
 A button in claude.ai chat that lets you export the chat as PDF or TXT.
 
+## [github.com to better-hub.com](./src/github-to-better-hub.user.js)
+[[greasyfork](https://greasyfork.org/en/scripts/566018-redirect-github-com-to-better-hub-com)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/github-to-better-hub.user.js?raw=true)
+
+Redirects from the slow and bloated [github.com](https://github.com) to a faster and more modern [better-hub.com](https://better-hub.com). This especially handy for code reviews with large diffs.
+
 ____
 
-#### What are userscripts?
+**What are userscripts?**
 
 Userscripts are small, user-installed JavaScript programs that modify web pages to change their appearance, behavior, or functionality. They allow users to personalize their browsing experience, such as adding dark mode, creating custom shortcuts, or removing unwanted page elements.
 
-#### What's a good userscript manager?
+**What's a good userscript manager?**
 
 I use [Tampermonkey](https://www.tampermonkey.net/) on Chromium, Firefox, and Safari.
