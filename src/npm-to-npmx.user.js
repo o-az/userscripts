@@ -29,14 +29,14 @@
     '/logout',
     '/signup',
     '/settings',
-    '/org/',
-    '/~', // User profiles
-    '/-/', // API/internal routes
+    '/org',
+    '/-', // API/internal routes
     '/advisories', // Security advisories management
     '/support',
   ]
 
   // Check if current path should be excluded
+  if (pathname.startsWith('/~')) return // User profiles (e.g., /~sindresorhus)
   if (
     excludedPaths.some(
       (path) => pathname === path || pathname.startsWith(path + '/'),
