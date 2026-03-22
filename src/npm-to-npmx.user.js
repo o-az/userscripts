@@ -21,7 +21,7 @@
   const { pathname, search, hash } = window.location
 
   // Bypass: Add ?noredirect to any URL to skip redirection
-  if (search.includes('noredirect')) return
+  if (new URLSearchParams(search).has('noredirect')) return
 
   // Paths that don't have equivalents on npmx.dev
   const excludedPaths = [
@@ -37,7 +37,12 @@
   ]
 
   // Check if current path should be excluded
-  if (excludedPaths.some((path) => pathname.startsWith(path))) return
+  if (
+    excludedPaths.some(
+      (path) => pathname === path || pathname.startsWith(path + '/'),
+    )
+  )
+    return
 
   // Exclude package management subpages (but allow package view pages)
   // e.g., /package/react/access, /package/react/collaborators

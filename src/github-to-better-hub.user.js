@@ -5,7 +5,6 @@
 // @description  Automatically redirect from github.com to better-hub.com. URL paths are fully compatible for browsing. Append `?noredirect` to any URL to skip redirection.
 // @author       https://github.com/o-az
 // @match        *://github.com/*
-// @match        *://*.github.com/*
 // @icon         https://better-hub.com/favicon.ico
 // @homepageURL  https://github.com/o-az/userscripts
 // @supportURL   https://github.com/o-az/userscripts/issues
@@ -21,7 +20,7 @@
   const { pathname, search, hash } = window.location
 
   // Bypass: Add ?noredirect to any URL to skip redirection
-  if (search.includes('noredirect')) return
+  if (new URLSearchParams(search).has('noredirect')) return
 
   // Paths that don't have equivalents on better-hub.com
   const excludedPaths = [
@@ -41,7 +40,12 @@
   ]
 
   // Check if current path should be excluded
-  if (excludedPaths.some((path) => pathname.startsWith(path))) return
+  if (
+    excludedPaths.some(
+      (path) => pathname === path || pathname.startsWith(path + '/'),
+    )
+  )
+    return
 
   // Redirect without adding to browser history
   window.location.replace(`https://better-hub.com${pathname}${search}${hash}`)
