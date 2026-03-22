@@ -17,10 +17,10 @@ Redirects from the slow and bloated [github.com](https://github.com) to a faster
 
 ____
 
-#### What are userscripts?
+**What are userscripts?**
 
 Userscripts are small, user-installed JavaScript programs that modify web pages to change their appearance, behavior, or functionality. They allow users to personalize their browsing experience, such as adding dark mode, creating custom shortcuts, or removing unwanted page elements.
 
-#### What's a good userscript manager?
+**What's a good userscript manager?**
 
 I use [Tampermonkey](https://www.tampermonkey.net/) on Chromium, Firefox, and Safari.
