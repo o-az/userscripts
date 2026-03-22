@@ -13,6 +13,8 @@ A button in claude.ai chat that lets you export the chat as PDF or TXT.
 ## [github.com to better-hub.com](./src/github-to-better-hub.user.js)
 [[greasyfork](https://greasyfork.org/en/scripts/566018-redirect-github-com-to-better-hub-com)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/github-to-better-hub.user.js?raw=true)
 
+Redirects from the slow and bloated [github.com](https://github.com) to a faster and more modern [better-hub.com](https://better-hub.com). This especially handy for code reviews with large diffs.
+
 ____
 
 #### What are userscripts?
