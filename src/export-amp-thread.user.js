@@ -339,7 +339,7 @@
   }
 
   /**
-   * @param {{title: string, url: string, exportedAt: string, messages: Array<{role: string, content: string}>}} data
+   * @param {{title: string, url: string, exportedAt: string, messages: Array<{role: string, type?: string, content: string}>}} data
    */
   function formatAsText(data) {
     let output = `${data.title}\n`
@@ -349,7 +349,8 @@
     output += `${'-'.repeat(50)}\n\n`
 
     for (const msg of data.messages) {
-      output += `[${msg.role}]\n`
+      const roleLabel = msg.type ? `${msg.role} (${msg.type})` : msg.role
+      output += `[${roleLabel}]\n`
       output += `${msg.content}\n\n`
     }
 
@@ -473,7 +474,7 @@
           .map(
             (msg) => `
           <div class="message ${msg.role === 'You' ? 'user' : ''}">
-            <div class="role">${escapeHtml(msg.role)}</div>
+            <div class="role">${escapeHtml(msg.role)}${msg.type ? ` (${escapeHtml(msg.type)})` : ''}</div>
             <div class="content">${escapeHtml(msg.content)}</div>
           </div>
         `,
