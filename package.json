@@ -13,5 +13,9 @@
     "@typescript/native-preview": "^7.0.0-dev.20260324.1",
     "typed-query-selector": "^2.12.1",
     "typescript": "^6.0.2"
-  }
+  },
+  "license": "MIT",
+  "homepage": "https://omar.mov/userscripts",
+  "author": "omar <github+userscripts@omar.mov>",
+  "repository": "github:o-az/userscripts"
 }
