@@ -115,8 +115,16 @@
       menu.classList.remove('visible')
     }
 
+    const jsonBtn = document.createElement('button')
+    jsonBtn.textContent = '🔧 Export as JSON'
+    jsonBtn.onclick = () => {
+      exportAsJSON()
+      menu.classList.remove('visible')
+    }
+
     menu.appendChild(txtBtn)
     menu.appendChild(pdfBtn)
+    menu.appendChild(jsonBtn)
     document.body.appendChild(menu)
     return menu
   }
@@ -315,6 +323,21 @@
     const a = document.createElement('a')
     a.href = url
     a.download = `claude-chat-${new Date().toISOString().split('T')[0]}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  function exportAsJSON() {
+    const data = extractChatContent()
+    const json = JSON.stringify(data, null, 2)
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `claude-chat-${new Date().toISOString().split('T')[0]}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
