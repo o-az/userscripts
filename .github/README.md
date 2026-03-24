@@ -8,12 +8,12 @@ Redirects from the barely maintained [npmjs.com](https://npmjs.com) to the more 
 ## [Export Claude Chat](/src/export-claude-chat.user.js)
 [[greasyfork](https://greasyfork.org/en/scripts/566017-export-claude-chat)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-claude-chat.user.js?raw=true)
 
-A button in claude.ai chat that lets you export the chat as PDF or TXT.
+A button in [claude.ai](https://claude.ai) chat that lets you export the chat as PDF or TXT.
 
 ## [Export Amp Thread](/src/export-amp-thread.user.js)
-[one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js?raw=true)
+[[greasyfork](https://greasyfork.org/en/scripts/571001-export-amp-thread)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js?raw=true)
 
-A button in ampcode.com threads that lets you export the conversation as PDF, TXT, or JSON (with message types: thinking, text, tool_use).
+A button in [ampcode.com](https://ampcode.com) threads that lets you export the conversation as PDF, TXT, or JSON.
 
 ## [github.com to better-hub.com](/src/github-to-better-hub.user.js)
 [[greasyfork](https://greasyfork.org/en/scripts/566018-redirect-github-com-to-better-hub-com)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/github-to-better-hub.user.js?raw=true)
