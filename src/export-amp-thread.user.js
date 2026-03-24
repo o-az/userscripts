@@ -179,7 +179,16 @@
     }
   })
 
+  /**
+   * @typedef {Object} Message
+   * @property {string} role
+   * @property {string} [type]
+   * @property {string} content
+   * @property {string} timestamp
+   */
+
   function extractThreadContent() {
+    /** @type {Message[]} */
     const messages = []
     const processedTexts = new Set()
 
@@ -243,7 +252,7 @@
         processedTexts.add(content)
         messages.push({
           role: 'Amp',
-          type: blockType,
+          type: blockType || undefined,
           content: content,
           timestamp: new Date().toISOString(),
         })
@@ -258,16 +267,25 @@
     }
   }
 
+  /**
+   * @param {Element} block
+   * @param {string} blockType
+   * @returns {string | undefined}
+   */
   function extractBlockContent(block, blockType) {
     // For text blocks, get the markdown content
-    const markdownDiv = block.querySelector('.markdown')
+    const markdownDiv = /** @type {HTMLElement | null} */ (
+      block.querySelector('.markdown')
+    )
     if (markdownDiv) {
       return markdownDiv.innerText?.trim()
     }
 
     // For tool_use blocks, get the tool information
     if (blockType === 'tool_use') {
-      const resourceChip = block.querySelector('.resource-chip')
+      const resourceChip = /** @type {HTMLElement | null} */ (
+        block.querySelector('.resource-chip')
+      )
       if (resourceChip) {
         const toolName = resourceChip.querySelector('a')?.textContent?.trim()
         const toolContent = resourceChip.innerText?.trim()
@@ -279,14 +297,15 @@
     if (blockType === 'thinking') {
       const thinkingContent =
         block.querySelector('[data-thinking]')?.textContent?.trim() ||
-        block.innerText?.trim()
+        /** @type {HTMLElement} */ (block).innerText?.trim()
       return `[Thinking]\n${thinkingContent}`
     }
 
     // Default: get all text content
-    return block.innerText?.trim()
+    return /** @type {HTMLElement} */ (block).innerText?.trim()
   }
 
+  /** @type {(section: HTMLElement) => string | null} */
   function extractUserContent(section) {
     // Skip if it has block attributes (assistant content)
     if (section.hasAttribute('data-block-id')) return null
