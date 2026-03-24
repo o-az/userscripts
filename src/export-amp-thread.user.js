@@ -21,6 +21,16 @@
   const EXPORT_BUTTON_ID = 'export-amp-thread-btn'
   const STYLE_ID = 'export-amp-thread-styles'
 
+  /** @param {string} str */
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
+  }
+
   function addStyles() {
     if (document.getElementById(STYLE_ID)) return
 
@@ -96,10 +106,15 @@
     document.head.appendChild(styles)
   }
 
+  const MENU_ID = 'export-amp-menu'
+
   function createExportMenu() {
+    const existing = document.getElementById(MENU_ID)
+    if (existing) return existing
+
     const menu = document.createElement('div')
     menu.className = 'export-amp-menu'
-    menu.id = 'export-amp-menu'
+    menu.id = MENU_ID
 
     const txtBtn = document.createElement('button')
     txtBtn.textContent = '📄 Export as TXT'
@@ -151,15 +166,18 @@
       menu.classList.toggle('visible')
     }
 
-    document.addEventListener('click', (e) => {
-      const target = /** @type {Node|null} */ (e.target)
-      if (!button.contains(target) && !menu.contains(target)) {
-        menu.classList.remove('visible')
-      }
-    })
-
     document.body.appendChild(button)
   }
+
+  // Single global click listener to dismiss the menu — registered once
+  document.addEventListener('click', (e) => {
+    const target = /** @type {Node|null} */ (e.target)
+    const button = document.getElementById(EXPORT_BUTTON_ID)
+    const menu = document.getElementById(MENU_ID)
+    if (button && menu && !button.contains(target) && !menu.contains(target)) {
+      menu.classList.remove('visible')
+    }
+  })
 
   function extractThreadContent() {
     const messages = []
@@ -363,7 +381,7 @@
       <!DOCTYPE html>
       <html>
       <head>
-        <title>${data.title}</title>
+        <title>${escapeHtml(data.title)}</title>
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -426,9 +444,9 @@
           cursor: pointer;
           font-size: 14px;
         ">Print / Save as PDF</button>
-        <h1>${data.title}</h1>
+        <h1>${escapeHtml(data.title)}</h1>
         <div class="meta">
-          <strong>URL:</strong> ${data.url}<br>
+          <strong>URL:</strong> ${escapeHtml(data.url)}<br>
           <strong>Exported:</strong> ${new Date(data.exportedAt).toLocaleString()}
         </div>
         <hr>
@@ -436,8 +454,8 @@
           .map(
             (msg) => `
           <div class="message ${msg.role === 'You' ? 'user' : ''}">
-            <div class="role">${msg.role}</div>
-            <div class="content">${msg.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            <div class="role">${escapeHtml(msg.role)}</div>
+            <div class="content">${escapeHtml(msg.content)}</div>
           </div>
         `,
           )
@@ -476,7 +494,14 @@
 
   // Re-add button if removed by page navigation (SPA)
   const observer = new MutationObserver(() => {
-    if (!document.getElementById(EXPORT_BUTTON_ID)) {
+    if (document.getElementById(EXPORT_BUTTON_ID)) return
+
+    const hasThread =
+      document.querySelector('[data-thread]') ||
+      document.querySelector('[data-block-id]') ||
+      document.querySelector('.markdown')
+
+    if (hasThread) {
       addExportButton()
     }
   })
