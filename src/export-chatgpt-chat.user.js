@@ -398,16 +398,14 @@
       thinkingInsertionIndexes.length === normalizedThinkingMessages.length
     ) {
       let offset = 0
-      for (
-        let index = 0;
-        index < normalizedThinkingMessages.length;
-        index += 1
-      ) {
-        messages.splice(
-          thinkingInsertionIndexes[index] + offset,
-          0,
-          normalizedThinkingMessages[index],
-        )
+      for (const [
+        index,
+        thinkingMessage,
+      ] of normalizedThinkingMessages.entries()) {
+        const insertionIndex = thinkingInsertionIndexes[index]
+        if (insertionIndex == null) continue
+
+        messages.splice(insertionIndex + offset, 0, thinkingMessage)
         offset += 1
       }
     } else if (
@@ -416,7 +414,11 @@
     ) {
       const anchorIndex =
         thinkingInsertionIndexes[thinkingInsertionIndexes.length - 1]
-      messages.splice(anchorIndex, 0, ...normalizedThinkingMessages)
+      if (anchorIndex == null) {
+        messages.push(...normalizedThinkingMessages)
+      } else {
+        messages.splice(anchorIndex, 0, ...normalizedThinkingMessages)
+      }
     } else {
       messages.push(...normalizedThinkingMessages)
     }
