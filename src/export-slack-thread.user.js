@@ -217,16 +217,16 @@
     if (dialog) {
       const label = dialog.getAttribute('aria-label') || ''
       const match = label.match(/Thread in (?:channel )?(.+)/)
-      if (match) return match[1].trim()
+      if (match?.[1]) return match[1].trim()
     }
 
     // Fallback: look for the virtual list's aria-label
     const list = panel.querySelector('[role="list"][aria-label]')
-    if (list) {
-      const label = list.getAttribute('aria-label') || ''
-      const match = label.match(/Thread in (.+?)(?:\s*\()/)
-      if (match) return match[1].trim()
-    }
+    if (!list) return 'unknown-channel'
+
+    const label = list.getAttribute('aria-label') || ''
+    const match = label.match(/Thread in (.+?)(?:\s*\()/)
+    if (match?.[1]) return match[1].trim()
 
     return 'unknown-channel'
   }
@@ -286,8 +286,8 @@
 
     // Blockquotes
     const quotes = el.querySelectorAll('.p-rich_text_block blockquote')
-    for (const q of quotes) {
-      const text = /** @type {HTMLElement} */ (q).innerText?.trim()
+    for (const quote of quotes) {
+      const text = /** @type {HTMLElement} */ (quote).innerText?.trim()
       if (text) parts.push('> ' + text)
     }
 
@@ -368,7 +368,7 @@
     }
 
     // Build a title from the root message
-    const rootMsg = messages.find((m) => m.isRoot) || messages[0]
+    const rootMsg = messages.find((message) => message.isRoot) || messages.at(0)
     const title = rootMsg
       ? `Thread by ${rootMsg.sender} in #${channel}`
       : `Thread in #${channel}`
@@ -414,9 +414,9 @@
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '')
 
-      if (!normalized) {
+      if (!normalized)
         return `slack-thread-${new Date().toISOString().replace(/[:.]/g, '-')}`
-      }
+
       return normalized.startsWith('slack-')
         ? normalized
         : `slack-${normalized}`
@@ -425,6 +425,7 @@
     }
   }
 
+  /** @param {Blob} blob @param {string} filename */
   function download(blob, filename) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -591,11 +592,9 @@
     setTimeout(() => clearInterval(checkInterval), 30_000)
   }
 
-  if (document.readyState === 'loading') {
+  if (document.readyState === 'loading')
     document.addEventListener('DOMContentLoaded', init)
-  } else {
-    init()
-  }
+  else init()
 
   // Show/hide button as thread panel opens/closes (Slack is a SPA)
   const observer = new MutationObserver(() => {
