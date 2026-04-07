@@ -386,7 +386,9 @@
         return `claude-chat-${timestamp}`
       }
 
-      return `claude-${normalizedTitle}`
+      return normalizedTitle.startsWith('claude-')
+        ? normalizedTitle
+        : `claude-${normalizedTitle}`
     } catch {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
       return `claude-chat-${timestamp}`

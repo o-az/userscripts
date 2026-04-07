@@ -410,7 +410,9 @@
         return `amp-thread-${timestamp}`
       }
 
-      return `amp-${normalizedTitle}`
+      return normalizedTitle.startsWith('amp-')
+        ? normalizedTitle
+        : `amp-${normalizedTitle}`
     } catch {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
       return `amp-thread-${timestamp}`
