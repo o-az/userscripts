@@ -373,7 +373,6 @@
   function getExportFileBaseName(title) {
     try {
       const normalizedTitle = title
-        .replace(/\s+-\s+Claude$/, '')
         .trim()
         .toLowerCase()
         .replace(/\s+/g, '-')

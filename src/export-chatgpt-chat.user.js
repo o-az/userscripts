@@ -261,6 +261,14 @@
     return blocks
   }
 
+  /** @param {HTMLElement} turn */
+  function turnHasThinkingSummary(turn) {
+    return Array.from(turn.querySelectorAll('button')).some((button) => {
+      const text = getElementText(button)
+      return text === 'Thinking' || /^Thought for \d+/i.test(text)
+    })
+  }
+
   function extractThinkingMessages() {
     /** @type {Array<string>} */
     const thinkingBlocks = []
@@ -277,9 +285,12 @@
             '[aria-label="Reasoning details"], .markdown, [class*="QKycbG_markdown"]',
           )
 
+      /** @type {Array<string>} */
+      const candidates = []
+
       for (const contentBlock of contentBlocks) {
         const text = getElementText(contentBlock)
-        if (!text || seen.has(text)) continue
+        if (!text) continue
 
         if (
           text === 'Reasoning details' ||
@@ -288,6 +299,27 @@
         ) {
           continue
         }
+
+        // Prefer the deepest extracted content over a wrapper that repeats it
+        // with headings or surrounding chrome.
+        const overlapsExisting = candidates.some(
+          (candidate) =>
+            candidate === text ||
+            candidate.includes(text) ||
+            text.includes(candidate),
+        )
+        if (!overlapsExisting) {
+          candidates.push(text)
+        }
+      }
+
+      candidates.sort((a, b) => a.length - b.length)
+
+      for (const text of candidates) {
+        const isWrapperDuplicate = candidates.some(
+          (candidate) => candidate !== text && text.includes(candidate),
+        )
+        if (isWrapperDuplicate || seen.has(text)) continue
 
         seen.add(text)
         thinkingBlocks.push(text)
@@ -301,6 +333,8 @@
     /** @type {Array<Message>} */
     const messages = []
     const processedTexts = new Set()
+    /** @type {Array<number>} */
+    const thinkingInsertionIndexes = []
 
     const turns = document.querySelectorAll(
       '[data-testid^="conversation-turn-"][data-turn]',
@@ -336,20 +370,55 @@
             timestamp: new Date().toISOString(),
           })
         }
+
+        if (turnHasThinkingSummary(turn)) {
+          thinkingInsertionIndexes.push(messages.length)
+        }
       }
     }
 
     const thinkingMessages = extractThinkingMessages()
+
+    /** @type {Array<Message>} */
+    const normalizedThinkingMessages = []
     for (const text of thinkingMessages) {
       const key = `thinking:${text}`
       if (processedTexts.has(key)) continue
       processedTexts.add(key)
-      messages.push({
+      normalizedThinkingMessages.push({
         role: 'ChatGPT',
         type: 'thinking',
         content: text,
         timestamp: new Date().toISOString(),
       })
+    }
+
+    if (
+      normalizedThinkingMessages.length > 0 &&
+      thinkingInsertionIndexes.length === normalizedThinkingMessages.length
+    ) {
+      let offset = 0
+      for (
+        let index = 0;
+        index < normalizedThinkingMessages.length;
+        index += 1
+      ) {
+        messages.splice(
+          thinkingInsertionIndexes[index] + offset,
+          0,
+          normalizedThinkingMessages[index],
+        )
+        offset += 1
+      }
+    } else if (
+      normalizedThinkingMessages.length > 0 &&
+      thinkingInsertionIndexes.length > 0
+    ) {
+      const anchorIndex =
+        thinkingInsertionIndexes[thinkingInsertionIndexes.length - 1]
+      messages.splice(anchorIndex, 0, ...normalizedThinkingMessages)
+    } else {
+      messages.push(...normalizedThinkingMessages)
     }
 
     return {
@@ -385,8 +454,6 @@
   function getExportFileBaseName(title) {
     try {
       const normalizedTitle = title
-        .replace(/\s+-\s+ChatGPT$/, '')
-        .replace(/\s+\|\s+ChatGPT$/, '')
         .trim()
         .toLowerCase()
         .replace(/\s+/g, '-')
@@ -568,7 +635,10 @@
     return Boolean(
       document.querySelector('[data-testid^="conversation-turn-"]') ||
         document.querySelector('[data-message-author-role]') ||
-        document.querySelector('main'),
+        document.querySelector('[data-turn]') ||
+        document.querySelector('[data-message-id]') ||
+        document.querySelector('.agent-turn') ||
+        document.querySelector('.markdown'),
     )
   }
 

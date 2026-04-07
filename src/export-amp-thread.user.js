@@ -199,7 +199,7 @@
     if (!threadContainer) {
       console.log('Amp Export: No thread container found')
       return {
-        title: document.title,
+        title: document.title.replace(' - Amp', '').trim() || 'Amp Thread',
         url: window.location.href,
         exportedAt: new Date().toISOString(),
         messages,
@@ -397,7 +397,6 @@
   function getExportFileBaseName(title) {
     try {
       const normalizedTitle = title
-        .replace(/\s+-\s+Amp$/, '')
         .trim()
         .toLowerCase()
         .replace(/\s+/g, '-')
