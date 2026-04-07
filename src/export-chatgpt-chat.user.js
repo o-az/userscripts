@@ -358,6 +358,7 @@
       }
 
       if (turnRole === 'assistant') {
+        const assistantInsertionIndex = messages.length
         const assistantMessages = extractAssistantMessages(turn)
         for (const text of assistantMessages) {
           const key = `assistant:${text}`
@@ -372,7 +373,7 @@
         }
 
         if (turnHasThinkingSummary(turn)) {
-          thinkingInsertionIndexes.push(messages.length)
+          thinkingInsertionIndexes.push(assistantInsertionIndex)
         }
       }
     }
