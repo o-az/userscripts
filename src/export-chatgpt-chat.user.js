@@ -2,7 +2,7 @@
 // @name         Export ChatGPT Thread
 // @namespace    https://chatgpt.com/
 // @version      1.0
-// @description  Add an export button to ChatGPT threads to save conversations as text or PDF
+// @description  Add an export button to ChatGPT threads to save conversations as text, json, or PDF
 // @author       https://github.com/o-az
 // @match        *://chatgpt.com/c/*
 // @match        *://chatgpt.com/g/*/c/*

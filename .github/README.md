@@ -33,4 +33,4 @@ Userscripts are small, user-installed JavaScript programs that modify web pages 
 
 **What's a good userscript manager?**
 
-I use [Tampermonkey](https://www.tampermonkey.net/) on Chromium, Firefox, and Safari.
+I use [Tampermonkey](https://www.tampermonkey.net) on Chromium, Firefox, and Safari.
