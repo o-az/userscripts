@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Export Amp Thread
 // @namespace    https://ampcode.com/
-// @version      1.0
+// @version      1.1
 // @description  Add an export button to Amp threads to save conversations as text or PDF
 // @author       https://github.com/o-az
 // @match        *://ampcode.com/threads/*
@@ -531,10 +531,10 @@
         clearInterval(checkInterval)
         addExportButton()
       }
-    }, 1000)
+    }, 1_000)
 
     // Stop checking after 30 seconds
-    setTimeout(() => clearInterval(checkInterval), 30000)
+    setTimeout(() => clearInterval(checkInterval), 30_000)
   }
 
   if (document.readyState === 'loading') {

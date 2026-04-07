@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Export Claude Chat
 // @namespace    https://claude.ai/
-// @version      1.0
+// @version      1.1
 // @description  Add an export button to Claude.ai conversations to save chats as text or PDF
 // @author       https://github.com/o-az
 // @match        *://claude.ai/*
@@ -20,13 +20,24 @@
 
   const EXPORT_BUTTON_ID = 'export-claude-chat-btn'
   const STYLE_ID = 'export-claude-chat-styles'
+  const MENU_ID = 'export-claude-menu'
+
+  /** @param {string} str */
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
+  }
 
   function addStyles() {
     if (document.getElementById(STYLE_ID)) return
 
     const styles = document.createElement('style')
     styles.id = STYLE_ID
-    styles.textContent = `
+    styles.textContent = /* css */ `
       #${EXPORT_BUTTON_ID} {
         position: fixed;
         bottom: 20px;
@@ -97,9 +108,14 @@
   }
 
   function createExportMenu() {
+    const existing = document.getElementById(MENU_ID)
+    if (existing) return existing
+
     const menu = document.createElement('div')
-    menu.className = 'export-claude-menu'
-    menu.id = 'export-claude-menu'
+    Object.assign(menu, {
+      id: MENU_ID,
+      className: 'export-claude-menu',
+    })
 
     const txtBtn = document.createElement('button')
     txtBtn.textContent = '📄 Export as TXT'
@@ -137,7 +153,7 @@
 
     const button = document.createElement('button')
     button.id = EXPORT_BUTTON_ID
-    button.innerHTML = `
+    button.innerHTML = /* html */ `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="7 10 12 15 17 10"/>
@@ -151,15 +167,18 @@
       menu.classList.toggle('visible')
     }
 
-    document.addEventListener('click', (e) => {
-      const target = /** @type {Node|null} */ (e.target)
-      if (!button.contains(target) && !menu.contains(target)) {
-        menu.classList.remove('visible')
-      }
-    })
-
     document.body.appendChild(button)
   }
+
+  // Single global click listener to dismiss the menu — registered once
+  document.addEventListener('click', (event) => {
+    const target = /** @type {Node|null} */ (event.target)
+    const button = document.getElementById(EXPORT_BUTTON_ID)
+    const menu = document.getElementById(MENU_ID)
+    if (button && menu && !button.contains(target) && !menu.contains(target)) {
+      menu.classList.remove('visible')
+    }
+  })
 
   function extractChatContent() {
     const messages = []
@@ -319,10 +338,13 @@
     const text = formatAsText(data)
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
+    const fileBaseName = getExportFileBaseName(data.title)
 
     const a = document.createElement('a')
-    a.href = url
-    a.download = `claude-chat-${new Date().toISOString().split('T')[0]}.txt`
+    Object.assign(a, {
+      href: url,
+      download: `${fileBaseName}.txt`,
+    })
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -334,18 +356,46 @@
     const json = JSON.stringify(data, null, 2)
     const blob = new Blob([json], { type: 'application/json;charset=utf-8' })
     const url = URL.createObjectURL(blob)
+    const fileBaseName = getExportFileBaseName(data.title)
 
     const a = document.createElement('a')
-    a.href = url
-    a.download = `claude-chat-${new Date().toISOString().split('T')[0]}.json`
+    Object.assign(a, {
+      href: url,
+      download: `${fileBaseName}.json`,
+    })
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
   }
 
+  /** @param {string} title */
+  function getExportFileBaseName(title) {
+    try {
+      const normalizedTitle = title
+        .replace(/\s+-\s+Claude$/, '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-_]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+
+      if (!normalizedTitle) {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+        return `claude-chat-${timestamp}`
+      }
+
+      return normalizedTitle
+    } catch {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+      return `claude-chat-${timestamp}`
+    }
+  }
+
   function exportAsPDF() {
     const data = extractChatContent()
+    const fileBaseName = getExportFileBaseName(data.title)
 
     // Create a printable window
     const printWindow = window.open('', '_blank')
@@ -354,11 +404,11 @@
       return
     }
 
-    printWindow.document.write(`
+    printWindow.document.write(/* html */ `
       <!DOCTYPE html>
       <html>
       <head>
-        <title>${data.title}</title>
+        <title>${escapeHtml(fileBaseName)}</title>
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -421,9 +471,9 @@
           cursor: pointer;
           font-size: 14px;
         ">Print / Save as PDF</button>
-        <h1>${data.title}</h1>
+        <h1>${escapeHtml(data.title)}</h1>
         <div class="meta">
-          <strong>URL:</strong> ${data.url}<br>
+          <strong>URL:</strong> ${escapeHtml(data.url)}<br>
           <strong>Exported:</strong> ${new Date(data.exportedAt).toLocaleString()}
         </div>
         <hr>
@@ -431,8 +481,8 @@
           .map(
             (msg) => `
           <div class="message ${msg.role === 'You' ? 'user' : ''}">
-            <div class="role">${msg.role}</div>
-            <div class="content">${msg.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            <div class="role">${escapeHtml(msg.role)}</div>
+            <div class="content">${escapeHtml(msg.content)}</div>
           </div>
         `,
           )
@@ -459,10 +509,10 @@
         clearInterval(checkInterval)
         addExportButton()
       }
-    }, 1000)
+    }, 1_000)
 
     // Stop checking after 30 seconds
-    setTimeout(() => clearInterval(checkInterval), 30000)
+    setTimeout(() => clearInterval(checkInterval), 30_000)
   }
 
   if (document.readyState === 'loading') {
