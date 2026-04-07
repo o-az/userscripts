@@ -266,36 +266,45 @@
     }
 
     // --- Content ---
-    // Primary: rich text blocks
-    const richTextSections = el.querySelectorAll('.p-rich_text_section')
+    // Collect nodes inside lists, blockquotes, and code blocks so
+    // the top-level rich_text_section pass can skip them.
+    /** @type {Set<Element>} */
+    const nested = new Set()
+    for (const node of el.querySelectorAll(
+      '.p-rich_text_list .p-rich_text_section, ' +
+        '.p-rich_text_block blockquote .p-rich_text_section, ' +
+        '.p-rich_text_block pre .p-rich_text_section',
+    )) {
+      nested.add(node)
+    }
+
     /** @type {string[]} */
     const parts = []
-    for (const section of richTextSections) {
+
+    // Top-level rich text sections (skip nested ones)
+    for (const section of el.querySelectorAll('.p-rich_text_section')) {
+      if (nested.has(section)) continue
       const text = /** @type {HTMLElement} */ (section).innerText?.trim()
       if (text) parts.push(text)
     }
 
     // Code blocks
-    const codeBlocks = el.querySelectorAll(
+    for (const code of el.querySelectorAll(
       '.p-rich_text_block pre, .p-code_block code',
-    )
-    for (const code of codeBlocks) {
+    )) {
       const text = /** @type {HTMLElement} */ (code).innerText?.trim()
       if (text) parts.push('```\n' + text + '\n```')
     }
 
     // Blockquotes
-    const quotes = el.querySelectorAll('.p-rich_text_block blockquote')
-    for (const quote of quotes) {
+    for (const quote of el.querySelectorAll('.p-rich_text_block blockquote')) {
       const text = /** @type {HTMLElement} */ (quote).innerText?.trim()
       if (text) parts.push('> ' + text)
     }
 
     // Lists
-    const lists = el.querySelectorAll('.p-rich_text_list')
-    for (const list of lists) {
-      const items = list.querySelectorAll('.p-rich_text_section')
-      for (const item of items) {
+    for (const list of el.querySelectorAll('.p-rich_text_list')) {
+      for (const item of list.querySelectorAll('.p-rich_text_section')) {
         const text = /** @type {HTMLElement} */ (item).innerText?.trim()
         if (text) parts.push('• ' + text)
       }
@@ -353,15 +362,6 @@
     for (const container of containers) {
       const msg = parseMessage(container, lastSender)
       if (msg) {
-        // Deduplicate: skip if same sender + content as previous
-        const prev = messages[messages.length - 1]
-        if (
-          prev &&
-          prev.sender === msg.sender &&
-          prev.content === msg.content
-        ) {
-          continue
-        }
         messages.push(msg)
         if (msg.sender) lastSender = msg.sender
       }
