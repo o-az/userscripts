@@ -362,10 +362,11 @@
     const text = formatAsText(data)
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
+    const fileBaseName = getExportFileBaseName(data.title)
 
     const a = document.createElement('a')
     a.href = url
-    a.download = `amp-thread-${new Date().toISOString().split('T')[0]}.txt`
+    a.download = `${fileBaseName}.txt`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -377,18 +378,38 @@
     const json = JSON.stringify(data, null, 2)
     const blob = new Blob([json], { type: 'application/json;charset=utf-8' })
     const url = URL.createObjectURL(blob)
+    const fileBaseName = getExportFileBaseName(data.title)
 
     const a = document.createElement('a')
     a.href = url
-    a.download = `amp-thread-${new Date().toISOString().split('T')[0]}.json`
+    a.download = `${fileBaseName}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
   }
 
+  /** @param {string} title */
+  function getExportFileBaseName(title) {
+    try {
+      const normalizedTitle = title
+        .replace(/\s+-\s+Amp$/, '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-_]/g, '')
+        .replace(/-+/g, '-')
+
+      return normalizedTitle
+    } catch {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+      return `amp-thread-${timestamp}`
+    }
+  }
+
   function exportAsPDF() {
     const data = extractThreadContent()
+    const fileBaseName = getExportFileBaseName(data.title)
 
     // Create a printable window
     const printWindow = window.open('', '_blank')
@@ -401,7 +422,7 @@
       <!DOCTYPE html>
       <html>
       <head>
-        <title>${escapeHtml(data.title)}</title>
+        <title>${escapeHtml(fileBaseName)}</title>
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
