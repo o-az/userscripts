@@ -5,6 +5,9 @@
 
 Redirects from the barely maintained [npmjs.com](https://npmjs.com) to the more modern [npmx.dev](https://npmx.dev).
 
+## [Export Slack Thread (web-only)](/src/export-slack-thread.user.js)
+[[greasyfork](https://greasyfork.org/en/scripts)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-slack-thread.user.js?raw=true)
+
 ## [Export Claude Chat](/src/export-claude-chat.user.js)
 [[greasyfork](https://greasyfork.org/en/scripts/566017-export-claude-chat)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-claude-chat.user.js?raw=true)
 
