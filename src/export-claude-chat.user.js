@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Export Claude Chat
 // @namespace    https://claude.ai/
-// @version      1.1
+// @version      1.2
 // @description  Add an export button to Claude.ai conversations to save chats as text or PDF
 // @author       https://github.com/o-az
 // @match        *://claude.ai/*
@@ -386,7 +386,7 @@
         return `claude-chat-${timestamp}`
       }
 
-      return normalizedTitle
+      return `claude-${normalizedTitle}`
     } catch {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
       return `claude-chat-${timestamp}`

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Export Amp Thread
 // @namespace    https://ampcode.com/
-// @version      1.1
+// @version      1.2
 // @description  Add an export button to Amp threads to save conversations as text or PDF
 // @author       https://github.com/o-az
 // @match        *://ampcode.com/threads/*
@@ -410,7 +410,7 @@
         return `amp-thread-${timestamp}`
       }
 
-      return normalizedTitle
+      return `amp-${normalizedTitle}`
     } catch {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
       return `amp-thread-${timestamp}`
