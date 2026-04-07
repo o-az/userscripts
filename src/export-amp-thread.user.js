@@ -113,8 +113,10 @@
     if (existing) return existing
 
     const menu = document.createElement('div')
-    menu.className = 'export-amp-menu'
-    menu.id = MENU_ID
+    Object.assign(menu, {
+      id: MENU_ID,
+      className: 'export-amp-menu',
+    })
 
     const txtBtn = document.createElement('button')
     txtBtn.textContent = '📄 Export as TXT'
@@ -161,8 +163,8 @@
       Export Thread
     `
 
-    button.onclick = (e) => {
-      e.stopPropagation()
+    button.onclick = (event) => {
+      event.stopPropagation()
       menu.classList.toggle('visible')
     }
 
@@ -170,8 +172,8 @@
   }
 
   // Single global click listener to dismiss the menu — registered once
-  document.addEventListener('click', (e) => {
-    const target = /** @type {Node|null} */ (e.target)
+  document.addEventListener('click', (event) => {
+    const target = /** @type {Node|null} */ (event.target)
     const button = document.getElementById(EXPORT_BUTTON_ID)
     const menu = document.getElementById(MENU_ID)
     if (button && menu && !button.contains(target) && !menu.contains(target)) {
@@ -188,7 +190,7 @@
    */
 
   function extractThreadContent() {
-    /** @type {Message[]} */
+    /** @type {Array<Message>} */
     const messages = []
     const processedTexts = new Set()
 
@@ -327,9 +329,7 @@
     ]
 
     for (const pattern of uiPatterns) {
-      if (text === pattern || text.startsWith(pattern + '\n')) {
-        return null
-      }
+      if (text === pattern || text.startsWith(pattern + '\n')) return null
     }
 
     // Check if it's just UI elements
@@ -362,10 +362,13 @@
     const text = formatAsText(data)
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
+    const fileBaseName = getExportFileBaseName(data.title)
 
     const a = document.createElement('a')
-    a.href = url
-    a.download = `amp-thread-${new Date().toISOString().split('T')[0]}.txt`
+    Object.assign(a, {
+      href: url,
+      download: `${fileBaseName}.txt`,
+    })
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -377,18 +380,46 @@
     const json = JSON.stringify(data, null, 2)
     const blob = new Blob([json], { type: 'application/json;charset=utf-8' })
     const url = URL.createObjectURL(blob)
+    const fileBaseName = getExportFileBaseName(data.title)
 
     const a = document.createElement('a')
-    a.href = url
-    a.download = `amp-thread-${new Date().toISOString().split('T')[0]}.json`
+    Object.assign(a, {
+      href: url,
+      download: `${fileBaseName}.json`,
+    })
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
   }
 
+  /** @param {string} title */
+  function getExportFileBaseName(title) {
+    try {
+      const normalizedTitle = title
+        .replace(/\s+-\s+Amp$/, '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-_]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+
+      if (!normalizedTitle) {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+        return `amp-thread-${timestamp}`
+      }
+
+      return normalizedTitle
+    } catch {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+      return `amp-thread-${timestamp}`
+    }
+  }
+
   function exportAsPDF() {
     const data = extractThreadContent()
+    const fileBaseName = getExportFileBaseName(data.title)
 
     // Create a printable window
     const printWindow = window.open('', '_blank')
@@ -397,11 +428,11 @@
       return
     }
 
-    printWindow.document.write(`
+    printWindow.document.write(/* html */ `
       <!DOCTYPE html>
       <html>
       <head>
-        <title>${escapeHtml(data.title)}</title>
+        <title>${escapeHtml(fileBaseName)}</title>
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
