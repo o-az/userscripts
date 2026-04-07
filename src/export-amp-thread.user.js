@@ -36,7 +36,7 @@
 
     const styles = document.createElement('style')
     styles.id = STYLE_ID
-    styles.textContent = `
+    styles.textContent = /* css */ `
       #${EXPORT_BUTTON_ID} {
         position: fixed;
         bottom: 20px;
@@ -154,7 +154,7 @@
 
     const button = document.createElement('button')
     button.id = EXPORT_BUTTON_ID
-    button.innerHTML = `
+    button.innerHTML = /* html */ `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="7 10 12 15 17 10"/>
@@ -503,7 +503,7 @@
         <hr>
         ${data.messages
           .map(
-            (msg) => `
+            (msg) => /* html */ `
           <div class="message ${msg.role === 'You' ? 'user' : ''}">
             <div class="role">${escapeHtml(msg.role)}${msg.type ? ` (${escapeHtml(msg.type)})` : ''}</div>
             <div class="content">${escapeHtml(msg.content)}</div>

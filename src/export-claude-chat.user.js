@@ -479,7 +479,7 @@
         <hr>
         ${data.messages
           .map(
-            (msg) => `
+            (msg) => /* html */ `
           <div class="message ${msg.role === 'You' ? 'user' : ''}">
             <div class="role">${escapeHtml(msg.role)}</div>
             <div class="content">${escapeHtml(msg.content)}</div>
