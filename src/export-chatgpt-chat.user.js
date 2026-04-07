@@ -58,6 +58,11 @@
     return normalizeText(htmlElement.innerText || htmlElement.textContent)
   }
 
+  /** @param {ParentNode} root */
+  function getMarkdownBlocks(root) {
+    return root.querySelectorAll('.markdown, [class*="_markdown"]')
+  }
+
   function getConversationTitle() {
     return (
       document.title
@@ -238,9 +243,7 @@
     )
 
     for (const roleElement of roleElements) {
-      const markdownBlocks = roleElement.querySelectorAll(
-        '.markdown, [class*="QKycbG_markdown"]',
-      )
+      const markdownBlocks = getMarkdownBlocks(roleElement)
 
       if (markdownBlocks.length > 0) {
         for (const block of markdownBlocks) {
@@ -272,8 +275,8 @@
   }
 
   function extractThinkingMessages() {
-    /** @type {Array<string>} */
-    const thinkingBlocks = []
+    /** @type {Array<Array<string>>} */
+    const thinkingGroups = []
     const seen = new Set()
 
     const roots = document.querySelectorAll(
@@ -281,16 +284,23 @@
     )
 
     for (const root of roots) {
+      /** @type {Array<string>} */
+      const rootThinkingBlocks = []
+
       const contentBlocks = root.matches('[aria-label="Reasoning details"]')
         ? [root]
-        : root.querySelectorAll(
-            '[aria-label="Reasoning details"], .markdown, [class*="QKycbG_markdown"]',
-          )
+        : root.querySelectorAll('[aria-label="Reasoning details"]')
 
-      /** @type {Array<string>} */
+      const markdownBlocks = getMarkdownBlocks(root)
+      const scopedContentBlocks =
+        contentBlocks.length > 0
+          ? [...contentBlocks, ...markdownBlocks]
+          : markdownBlocks
+
+      /** @type {Array<{element: Element, text: string}>} */
       const candidates = []
 
-      for (const contentBlock of contentBlocks) {
+      for (const contentBlock of scopedContentBlocks) {
         const text = getElementText(contentBlock)
         if (!text) continue
 
@@ -302,25 +312,52 @@
           continue
         }
 
-        candidates.push(text)
+        candidates.push({
+          element: contentBlock,
+          text,
+        })
       }
 
-      const uniqueCandidates = [...new Set(candidates)].sort(
-        (a, b) => a.length - b.length,
-      )
+      /** @type {Array<{element: Element, text: string}>} */
+      const uniqueCandidates = []
 
-      for (const text of uniqueCandidates) {
+      for (const candidate of candidates.sort(
+        (a, b) => a.text.length - b.text.length,
+      )) {
+        const existingCandidateIndex = uniqueCandidates.findIndex(
+          (entry) => entry.text === candidate.text,
+        )
+
+        if (existingCandidateIndex === -1) {
+          uniqueCandidates.push(candidate)
+          continue
+        }
+
+        const existingCandidate = uniqueCandidates[existingCandidateIndex]
+        if (existingCandidate?.element.contains(candidate.element)) {
+          uniqueCandidates[existingCandidateIndex] = candidate
+        }
+      }
+
+      for (const { element, text } of uniqueCandidates) {
         const isWrapperDuplicate = uniqueCandidates.some(
-          (candidate) => candidate !== text && text.includes(candidate),
+          (candidate) =>
+            candidate.text !== text &&
+            element.contains(candidate.element) &&
+            text.includes(candidate.text),
         )
         if (isWrapperDuplicate || seen.has(text)) continue
 
         seen.add(text)
-        thinkingBlocks.push(text)
+        rootThinkingBlocks.push(text)
+      }
+
+      if (rootThinkingBlocks.length > 0) {
+        thinkingGroups.push(rootThinkingBlocks)
       }
     }
 
-    return thinkingBlocks
+    return thinkingGroups
   }
 
   function extractChatContent() {
@@ -372,50 +409,49 @@
       }
     }
 
-    const thinkingMessages = extractThinkingMessages()
+    const thinkingGroups = extractThinkingMessages()
 
-    /** @type {Array<Message>} */
-    const normalizedThinkingMessages = []
-    for (const text of thinkingMessages) {
-      const key = `thinking:${text}`
-      if (processedTexts.has(key)) continue
-      processedTexts.add(key)
-      normalizedThinkingMessages.push({
-        role: 'ChatGPT',
-        type: 'thinking',
-        content: text,
-        timestamp: new Date().toISOString(),
-      })
+    /** @type {Array<Array<Message>>} */
+    const normalizedThinkingGroups = []
+    for (const group of thinkingGroups) {
+      /** @type {Array<Message>} */
+      const normalizedGroup = []
+
+      for (const text of group) {
+        const key = `thinking:${text}`
+        if (processedTexts.has(key)) continue
+        processedTexts.add(key)
+        normalizedGroup.push({
+          role: 'ChatGPT',
+          type: 'thinking',
+          content: text,
+          timestamp: new Date().toISOString(),
+        })
+      }
+
+      if (normalizedGroup.length > 0) {
+        normalizedThinkingGroups.push(normalizedGroup)
+      }
     }
 
     if (
-      normalizedThinkingMessages.length > 0 &&
-      thinkingInsertionIndexes.length === normalizedThinkingMessages.length
-    ) {
-      let offset = 0
-      for (const [
-        index,
-        thinkingMessage,
-      ] of normalizedThinkingMessages.entries()) {
-        const insertionIndex = thinkingInsertionIndexes[index]
-        if (insertionIndex == null) continue
-
-        messages.splice(insertionIndex + offset, 0, thinkingMessage)
-        offset += 1
-      }
-    } else if (
-      normalizedThinkingMessages.length > 0 &&
+      normalizedThinkingGroups.length > 0 &&
       thinkingInsertionIndexes.length > 0
     ) {
-      const anchorIndex =
+      let offset = 0
+      const lastAnchorIndex =
         thinkingInsertionIndexes[thinkingInsertionIndexes.length - 1]
-      if (anchorIndex == null) {
-        messages.push(...normalizedThinkingMessages)
-      } else {
-        messages.splice(anchorIndex, 0, ...normalizedThinkingMessages)
+
+      for (const [index, thinkingGroup] of normalizedThinkingGroups.entries()) {
+        const insertionIndex =
+          thinkingInsertionIndexes[index] ?? lastAnchorIndex ?? messages.length
+        if (insertionIndex == null) continue
+
+        messages.splice(insertionIndex + offset, 0, ...thinkingGroup)
+        offset += thinkingGroup.length
       }
     } else {
-      messages.push(...normalizedThinkingMessages)
+      messages.push(...normalizedThinkingGroups.flat())
     }
 
     return {
