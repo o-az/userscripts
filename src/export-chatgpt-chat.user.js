@@ -5,7 +5,9 @@
 // @description  Add an export button to ChatGPT threads to save conversations as text or PDF
 // @author       https://github.com/o-az
 // @match        *://chatgpt.com/c/*
+// @match        *://chatgpt.com/g/*/c/*
 // @match        *://*.chatgpt.com/c/*
+// @match        *://*.chatgpt.com/g/*/c/*
 // @icon         https://chatgpt.com/favicon.ico
 // @homepageURL  https://github.com/o-az/userscripts
 // @supportURL   https://github.com/o-az/userscripts/issues
@@ -300,23 +302,15 @@
           continue
         }
 
-        // Prefer the deepest extracted content over a wrapper that repeats it
-        // with headings or surrounding chrome.
-        const overlapsExisting = candidates.some(
-          (candidate) =>
-            candidate === text ||
-            candidate.includes(text) ||
-            text.includes(candidate),
-        )
-        if (!overlapsExisting) {
-          candidates.push(text)
-        }
+        candidates.push(text)
       }
 
-      candidates.sort((a, b) => a.length - b.length)
+      const uniqueCandidates = [...new Set(candidates)].sort(
+        (a, b) => a.length - b.length,
+      )
 
-      for (const text of candidates) {
-        const isWrapperDuplicate = candidates.some(
+      for (const text of uniqueCandidates) {
+        const isWrapperDuplicate = uniqueCandidates.some(
           (candidate) => candidate !== text && text.includes(candidate),
         )
         if (isWrapperDuplicate || seen.has(text)) continue

@@ -308,7 +308,8 @@
     }
 
     return {
-      title: document.title.replace(' - Claude', '').trim() || 'Claude Chat',
+      title:
+        document.title.replace(/\s+-\s+Claude$/, '').trim() || 'Claude Chat',
       url: window.location.href,
       exportedAt: new Date().toISOString(),
       messages,
