@@ -8,7 +8,7 @@
 Redirects from the barely maintained [npmjs.com](https://npmjs.com) to the more modern [npmx.dev](https://npmx.dev).
 
 ### [Export Slack Thread](/src/export-slack-thread.user.js)
-[[greasyfork](https://greasyfork.org/en/scripts)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-slack-thread.user.js?raw=true)
+[[greasyfork](https://greasyfork.org/en/scripts/572953-export-slack-thread)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-slack-thread.user.js?raw=true)
 
 A button in [slack.com](https://app.slack.com) threads that lets you export the conversation as PDF, JSON, or TXT.
 
