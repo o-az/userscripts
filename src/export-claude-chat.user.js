@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Export Claude Chat
 // @namespace    https://claude.ai/
-// @version      1.1
+// @version      1.2
 // @description  Add an export button to Claude.ai conversations to save chats as text or PDF
 // @author       https://github.com/o-az
 // @match        *://claude.ai/*
@@ -308,7 +308,8 @@
     }
 
     return {
-      title: document.title.replace(' - Claude', '').trim() || 'Claude Chat',
+      title:
+        document.title.replace(/\s+-\s+Claude$/, '').trim() || 'Claude Chat',
       url: window.location.href,
       exportedAt: new Date().toISOString(),
       messages,
@@ -373,7 +374,6 @@
   function getExportFileBaseName(title) {
     try {
       const normalizedTitle = title
-        .replace(/\s+-\s+Claude$/, '')
         .trim()
         .toLowerCase()
         .replace(/\s+/g, '-')
@@ -386,7 +386,9 @@
         return `claude-chat-${timestamp}`
       }
 
-      return normalizedTitle
+      return normalizedTitle.startsWith('claude-')
+        ? normalizedTitle
+        : `claude-${normalizedTitle}`
     } catch {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
       return `claude-chat-${timestamp}`
@@ -479,7 +481,7 @@
         <hr>
         ${data.messages
           .map(
-            (msg) => `
+            (msg) => /* html */ `
           <div class="message ${msg.role === 'You' ? 'user' : ''}">
             <div class="role">${escapeHtml(msg.role)}</div>
             <div class="content">${escapeHtml(msg.content)}</div>

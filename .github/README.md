@@ -10,6 +10,11 @@ Redirects from the barely maintained [npmjs.com](https://npmjs.com) to the more 
 
 A button in [claude.ai](https://claude.ai) chat that lets you export the chat as PDF or TXT.
 
+## [Export ChatGPT Chat](/src/export-chatgpt-chat.user.js)
+[[greasyfork]] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-chatgpt-chat.user.js?raw=true)
+
+A button in [chatgpt.com](https://chatgpt.com) chats that lets you export the conversation as PDF, TXT, or JSON.
+
 ## [Export Amp Thread](/src/export-amp-thread.user.js)
 [[greasyfork](https://greasyfork.org/en/scripts/571001-export-amp-thread)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js?raw=true)
 

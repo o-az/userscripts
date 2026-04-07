@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Export Amp Thread
 // @namespace    https://ampcode.com/
-// @version      1.1
+// @version      1.2
 // @description  Add an export button to Amp threads to save conversations as text or PDF
 // @author       https://github.com/o-az
 // @match        *://ampcode.com/threads/*
@@ -36,7 +36,7 @@
 
     const styles = document.createElement('style')
     styles.id = STYLE_ID
-    styles.textContent = `
+    styles.textContent = /* css */ `
       #${EXPORT_BUTTON_ID} {
         position: fixed;
         bottom: 20px;
@@ -154,7 +154,7 @@
 
     const button = document.createElement('button')
     button.id = EXPORT_BUTTON_ID
-    button.innerHTML = `
+    button.innerHTML = /* html */ `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="7 10 12 15 17 10"/>
@@ -199,7 +199,7 @@
     if (!threadContainer) {
       console.log('Amp Export: No thread container found')
       return {
-        title: document.title,
+        title: document.title.replace(/\s+-\s+Amp$/, '').trim() || 'Amp Thread',
         url: window.location.href,
         exportedAt: new Date().toISOString(),
         messages,
@@ -262,7 +262,7 @@
     }
 
     return {
-      title: document.title.replace(' - Amp', '').trim() || 'Amp Thread',
+      title: document.title.replace(/\s+-\s+Amp$/, '').trim() || 'Amp Thread',
       url: window.location.href,
       exportedAt: new Date().toISOString(),
       messages,
@@ -397,7 +397,6 @@
   function getExportFileBaseName(title) {
     try {
       const normalizedTitle = title
-        .replace(/\s+-\s+Amp$/, '')
         .trim()
         .toLowerCase()
         .replace(/\s+/g, '-')
@@ -410,7 +409,9 @@
         return `amp-thread-${timestamp}`
       }
 
-      return normalizedTitle
+      return normalizedTitle.startsWith('amp-')
+        ? normalizedTitle
+        : `amp-${normalizedTitle}`
     } catch {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
       return `amp-thread-${timestamp}`
@@ -503,7 +504,7 @@
         <hr>
         ${data.messages
           .map(
-            (msg) => `
+            (msg) => /* html */ `
           <div class="message ${msg.role === 'You' ? 'user' : ''}">
             <div class="role">${escapeHtml(msg.role)}${msg.type ? ` (${escapeHtml(msg.type)})` : ''}</div>
             <div class="content">${escapeHtml(msg.content)}</div>
