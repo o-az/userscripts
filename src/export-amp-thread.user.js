@@ -113,8 +113,10 @@
     if (existing) return existing
 
     const menu = document.createElement('div')
-    menu.className = 'export-amp-menu'
-    menu.id = MENU_ID
+    Object.assign(menu, {
+      id: MENU_ID,
+      className: 'export-amp-menu',
+    })
 
     const txtBtn = document.createElement('button')
     txtBtn.textContent = '📄 Export as TXT'
@@ -161,8 +163,8 @@
       Export Thread
     `
 
-    button.onclick = (e) => {
-      e.stopPropagation()
+    button.onclick = (event) => {
+      event.stopPropagation()
       menu.classList.toggle('visible')
     }
 
@@ -170,8 +172,8 @@
   }
 
   // Single global click listener to dismiss the menu — registered once
-  document.addEventListener('click', (e) => {
-    const target = /** @type {Node|null} */ (e.target)
+  document.addEventListener('click', (event) => {
+    const target = /** @type {Node|null} */ (event.target)
     const button = document.getElementById(EXPORT_BUTTON_ID)
     const menu = document.getElementById(MENU_ID)
     if (button && menu && !button.contains(target) && !menu.contains(target)) {
@@ -188,7 +190,7 @@
    */
 
   function extractThreadContent() {
-    /** @type {Message[]} */
+    /** @type {Array<Message>} */
     const messages = []
     const processedTexts = new Set()
 
@@ -327,9 +329,7 @@
     ]
 
     for (const pattern of uiPatterns) {
-      if (text === pattern || text.startsWith(pattern + '\n')) {
-        return null
-      }
+      if (text === pattern || text.startsWith(pattern + '\n')) return null
     }
 
     // Check if it's just UI elements
@@ -365,8 +365,10 @@
     const fileBaseName = getExportFileBaseName(data.title)
 
     const a = document.createElement('a')
-    a.href = url
-    a.download = `${fileBaseName}.txt`
+    Object.assign(a, {
+      href: url,
+      download: `${fileBaseName}.txt`,
+    })
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -381,8 +383,10 @@
     const fileBaseName = getExportFileBaseName(data.title)
 
     const a = document.createElement('a')
-    a.href = url
-    a.download = `${fileBaseName}.json`
+    Object.assign(a, {
+      href: url,
+      download: `${fileBaseName}.json`,
+    })
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
