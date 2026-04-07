@@ -403,6 +403,12 @@
         .replace(/\s+/g, '-')
         .replace(/[^a-z0-9-_]/g, '')
         .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+
+      if (!normalizedTitle) {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+        return `amp-thread-${timestamp}`
+      }
 
       return normalizedTitle
     } catch {
@@ -422,7 +428,7 @@
       return
     }
 
-    printWindow.document.write(`
+    printWindow.document.write(/* html */ `
       <!DOCTYPE html>
       <html>
       <head>
