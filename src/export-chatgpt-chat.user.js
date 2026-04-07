@@ -399,7 +399,9 @@
         return `chatgpt-thread-${timestamp}`
       }
 
-      return `chatgpt-${normalizedTitle}`
+      return normalizedTitle.startsWith('chatgpt-')
+        ? normalizedTitle
+        : `chatgpt-${normalizedTitle}`
     } catch {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
       return `chatgpt-thread-${timestamp}`
