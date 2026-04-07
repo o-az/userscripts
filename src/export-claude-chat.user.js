@@ -2,7 +2,7 @@
 // @name         Export Claude Chat
 // @namespace    https://claude.ai/
 // @version      1.2
-// @description  Add an export button to Claude.ai conversations to save chats as text or PDF
+// @description  Add an export button to Claude.ai conversations to save chats as text, json, or PDF
 // @author       https://github.com/o-az
 // @match        *://claude.ai/*
 // @match        *://*.claude.ai/*

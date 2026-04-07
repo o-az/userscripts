@@ -2,7 +2,7 @@
 // @name         Export Amp Thread
 // @namespace    https://ampcode.com/
 // @version      1.2
-// @description  Add an export button to Amp threads to save conversations as text or PDF
+// @description  Add an export button to Amp threads to save conversations as text, json, or PDF
 // @author       https://github.com/o-az
 // @match        *://ampcode.com/threads/*
 // @match        *://*.ampcode.com/threads/*
