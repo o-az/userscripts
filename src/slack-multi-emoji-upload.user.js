@@ -264,14 +264,35 @@
 
   /** @param {File[]} files */
   function buildUploadPlan(files) {
-    const used = new Map()
+    const nextSuffixByBase = new Map()
+    const assigned = new Set()
+
+    /** @param {string} base @param {number} n */
+    function makeSuffixedName(base, n) {
+      const suffix = `_${n}`
+      const maxBaseLength = Math.max(1, 100 - suffix.length)
+      const trimmedBase =
+        base.slice(0, maxBaseLength).replace(/[_-]+$/g, '') || 'emoji'
+      return `${trimmedBase}${suffix}`
+    }
 
     return files.map((file) => {
       const bare = file.name.replace(/\.[^.]+$/, '')
       const base = makeSlackEmojiName(bare)
-      const count = used.get(base) || 0
-      used.set(base, count + 1)
-      const name = count === 0 ? base : `${base}_${count + 1}`.slice(0, 100)
+
+      let name = base
+      if (assigned.has(name)) {
+        let nextSuffix = nextSuffixByBase.get(base) || 2
+        do {
+          name = makeSuffixedName(base, nextSuffix)
+          nextSuffix += 1
+        } while (assigned.has(name))
+        nextSuffixByBase.set(base, nextSuffix)
+      } else {
+        nextSuffixByBase.set(base, 2)
+      }
+
+      assigned.add(name)
       return { file, name }
     })
   }
@@ -443,7 +464,7 @@
     state.cancelled = false
     state.current = ''
     refreshControls()
-    setStatus(summary, state.failed ? 'error' : 'success')
+    setStatus(summary, cancelled || state.failed ? 'error' : 'success')
   }
 
   const observer = new MutationObserver(() => {
