@@ -12,6 +12,11 @@ Redirects from the barely maintained [npmjs.com](https://npmjs.com) to the more 
 
 A button in [slack.com](https://app.slack.com) threads that lets you export the conversation as PDF, JSON, or TXT.
 
+### [Slack Multi-Emoji Upload](/src/slack-multi-emoji-upload.user.js)
+[one-click-install](http://github.com/o-az/userscripts/blob/main/src/slack-multi-emoji-upload.user.js?raw=true)
+
+A button in Slack's custom emoji page that lets you upload multiple emojis at once. Best used at `https://$WORKSPACE.slack.com/customize/emoji`.
+
 ### [Export Claude Chat](/src/export-claude-chat.user.js)
 [[greasyfork](https://greasyfork.org/en/scripts/566017-export-claude-chat)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-claude-chat.user.js?raw=true)
 
