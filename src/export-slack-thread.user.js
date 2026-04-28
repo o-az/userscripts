@@ -21,6 +21,10 @@
   const EXPORT_BUTTON_ID = 'export-slack-thread-btn'
   const MENU_ID = 'export-slack-thread-menu'
   const STYLE_ID = 'export-slack-thread-styles'
+  const PRIVACY_MODE_STORAGE_KEY = 'export-slack-thread-privacy-mode'
+  const REMOVED_LINK_TEXT = '[link removed]'
+  const URL_PATTERN =
+    /\bhttps?:\/\/[^\s<>"')\]]+|www\.[^\s<>"')\]]+|slack:\/\/[^\s<>"')\]]+/gi
 
   /** @param {string} str */
   function escapeHtml(str) {
@@ -83,6 +87,23 @@
         z-index: 9998;
         display: none;
       }
+      .export-slack-menu__privacy {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        color: #e0e0e0;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 13px;
+        cursor: pointer;
+        border-bottom: 1px solid #333;
+        margin-bottom: 4px;
+        user-select: none;
+      }
+      .export-slack-menu__privacy input {
+        accent-color: #611f69;
+        margin: 0;
+      }
       .export-slack-menu.visible {
         display: block;
       }
@@ -117,6 +138,24 @@
       className: 'export-slack-menu',
     })
 
+    const privacyLabel = document.createElement('label')
+    privacyLabel.className = 'export-slack-menu__privacy'
+    privacyLabel.title = 'Replace sender names and links in exported files'
+    privacyLabel.onclick = (event) => event.stopPropagation()
+
+    const privacyToggle = document.createElement('input')
+    privacyToggle.type = 'checkbox'
+    privacyToggle.checked = getPrivacyModeEnabled()
+    privacyToggle.onchange = () => {
+      setPrivacyModeEnabled(privacyToggle.checked)
+    }
+
+    const privacyText = document.createElement('span')
+    privacyText.textContent = 'Privacy mode'
+
+    privacyLabel.appendChild(privacyToggle)
+    privacyLabel.appendChild(privacyText)
+
     const txtBtn = document.createElement('button')
     txtBtn.textContent = '📄 Export as TXT'
     txtBtn.onclick = () => {
@@ -138,6 +177,7 @@
       menu.classList.remove('visible')
     }
 
+    menu.appendChild(privacyLabel)
     menu.appendChild(txtBtn)
     menu.appendChild(pdfBtn)
     menu.appendChild(jsonBtn)
@@ -193,6 +233,15 @@
    * @property {string} content
    * @property {boolean} isRoot
    */
+
+  function getPrivacyModeEnabled() {
+    return localStorage.getItem(PRIVACY_MODE_STORAGE_KEY) === 'true'
+  }
+
+  /** @param {boolean} enabled */
+  function setPrivacyModeEnabled(enabled) {
+    localStorage.setItem(PRIVACY_MODE_STORAGE_KEY, enabled ? 'true' : 'false')
+  }
 
   /**
    * Find the open thread flexpane.
@@ -382,6 +431,85 @@
     }
   }
 
+  /** @param {string} text */
+  function scrubLinks(text) {
+    return text.replace(URL_PATTERN, REMOVED_LINK_TEXT)
+  }
+
+  /** @param {string} text */
+  function escapeRegExp(text) {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  }
+
+  function createAliasGenerator() {
+    /** @type {Set<string>} */
+    const usedAliases = new Set()
+
+    return () => {
+      let alias = ''
+      do {
+        alias = `Person ${Math.floor(1000 + Math.random() * 9000)}`
+      } while (usedAliases.has(alias))
+      usedAliases.add(alias)
+      return alias
+    }
+  }
+
+  /**
+   * @param {{ channel: string, title: string, url: string, exportedAt: string, messages: ThreadMessage[] }} data
+   */
+  function anonymizeThreadData(data) {
+    const nextAlias = createAliasGenerator()
+    /** @type {Map<string, string>} */
+    const senderAliases = new Map()
+
+    /** @param {string} sender */
+    function anonymizeSender(sender) {
+      const normalized = sender.trim()
+      if (!normalized) return ''
+
+      const existing = senderAliases.get(normalized)
+      if (existing) return existing
+
+      const alias = nextAlias()
+      senderAliases.set(normalized, alias)
+      return alias
+    }
+
+    for (const message of data.messages) anonymizeSender(message.sender)
+
+    const messages = data.messages.map((message) => {
+      let content = scrubLinks(message.content)
+      for (const [sender, alias] of senderAliases) {
+        content = content.replace(new RegExp(escapeRegExp(sender), 'g'), alias)
+      }
+
+      return {
+        ...message,
+        sender: anonymizeSender(message.sender),
+        content,
+      }
+    })
+
+    const rootMsg = messages.find((message) => message.isRoot) || messages.at(0)
+    const title = rootMsg
+      ? `Thread by ${rootMsg.sender} in #private-channel`
+      : 'Thread in #private-channel'
+
+    return {
+      ...data,
+      channel: 'private-channel',
+      title,
+      url: REMOVED_LINK_TEXT,
+      messages,
+    }
+  }
+
+  function getExportData() {
+    const data = extractThreadContent()
+    return getPrivacyModeEnabled() ? anonymizeThreadData(data) : data
+  }
+
   // ---- Export Formats ----
 
   /**
@@ -437,7 +565,7 @@
   }
 
   function exportAsText() {
-    const data = extractThreadContent()
+    const data = getExportData()
     if (data.messages.length === 0) {
       alert('No thread messages found. Make sure a thread panel is open.')
       return
@@ -450,7 +578,7 @@
   }
 
   function exportAsJSON() {
-    const data = extractThreadContent()
+    const data = getExportData()
     if (data.messages.length === 0) {
       alert('No thread messages found. Make sure a thread panel is open.')
       return
@@ -464,7 +592,7 @@
   }
 
   function exportAsPDF() {
-    const data = extractThreadContent()
+    const data = getExportData()
     if (data.messages.length === 0) {
       alert('No thread messages found. Make sure a thread panel is open.')
       return
