@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Export Amp Thread
 // @namespace    https://ampcode.com/
-// @version      1.2
+// @version      1.3
 // @description  Add an export button to Amp threads to save conversations as text, json, or PDF
 // @author       https://github.com/o-az
 // @match        *://ampcode.com/threads/*
@@ -194,16 +194,37 @@
     const messages = []
     const processedTexts = new Set()
 
-    // Find the thread container
+    const baseData = {
+      title: getThreadTitle(),
+      url: window.location.href,
+      exportedAt: new Date().toISOString(),
+      messages,
+    }
+
+    // Current Amp thread pages render transcript rows with explicit role markers.
+    const transcriptMessages = document.querySelectorAll(
+      '[data-transcript-message-role]',
+    )
+    for (const messageElement of transcriptMessages) {
+      const role = messageElement.getAttribute('data-transcript-message-role')
+      const content = extractTranscriptMessageContent(messageElement)
+      if (!content || processedTexts.has(content)) continue
+
+      processedTexts.add(content)
+      messages.push({
+        role: role === 'user' ? 'You' : 'Amp',
+        content,
+        timestamp: new Date().toISOString(),
+      })
+    }
+
+    if (messages.length > 0) return baseData
+
+    // Legacy Amp thread pages used a data-thread container with data-block-* blocks.
     const threadContainer = document.querySelector('[data-thread]')
     if (!threadContainer) {
       console.log('Amp Export: No thread container found')
-      return {
-        title: document.title.replace(/\s+-\s+Amp$/, '').trim() || 'Amp Thread',
-        url: window.location.href,
-        exportedAt: new Date().toISOString(),
-        messages,
-      }
+      return baseData
     }
 
     // Get all message sections in the thread
@@ -261,12 +282,46 @@
       }
     }
 
-    return {
-      title: document.title.replace(/\s+-\s+Amp$/, '').trim() || 'Amp Thread',
-      url: window.location.href,
-      exportedAt: new Date().toISOString(),
-      messages,
+    return baseData
+  }
+
+  function getThreadTitle() {
+    const title =
+      document
+        .querySelector('meta[property="og:title"]')
+        ?.getAttribute('content')
+        ?.trim() || document.title.replace(/\s+-\s+Amp$/, '').trim()
+
+    return title || 'Amp Thread'
+  }
+
+  /**
+   * @param {Element} element
+   * @returns {string}
+   */
+  function getElementText(element) {
+    const htmlElement = /** @type {HTMLElement} */ (element)
+    return (htmlElement.innerText || element.textContent || '').trim()
+  }
+
+  /**
+   * @param {Element} messageElement
+   * @returns {string | undefined}
+   */
+  function extractTranscriptMessageContent(messageElement) {
+    const textRoot =
+      messageElement.querySelector('[data-presence-text-root]') ||
+      messageElement
+    const markdownBlocks = textRoot.querySelectorAll('.markdown')
+
+    if (markdownBlocks.length > 0) {
+      return [...markdownBlocks]
+        .map((block) => getElementText(block))
+        .filter(Boolean)
+        .join('\n\n')
     }
+
+    return getElementText(textRoot)
   }
 
   /**
@@ -280,7 +335,7 @@
       block.querySelector('.markdown')
     )
     if (markdownDiv) {
-      return markdownDiv.innerText?.trim()
+      return getElementText(markdownDiv)
     }
 
     // For tool_use blocks, get the tool information
@@ -299,12 +354,12 @@
     if (blockType === 'thinking') {
       const thinkingContent =
         block.querySelector('[data-thinking]')?.textContent?.trim() ||
-        /** @type {HTMLElement} */ (block).innerText?.trim()
+        getElementText(block)
       return `[Thinking]\n${thinkingContent}`
     }
 
     // Default: get all text content
-    return /** @type {HTMLElement} */ (block).innerText?.trim()
+    return getElementText(block)
   }
 
   /** @type {(section: HTMLElement) => string | null} */
@@ -313,7 +368,7 @@
     if (section.hasAttribute('data-block-id')) return null
 
     // Get text content but filter out UI elements
-    const text = section.innerText?.trim()
+    const text = getElementText(section)
     if (!text) return null
 
     // Filter out common UI text patterns
@@ -524,6 +579,7 @@
     const checkInterval = setInterval(() => {
       // Look for thread container or messages
       const hasThread =
+        document.querySelector('[data-transcript-message-role]') ||
         document.querySelector('[data-thread]') ||
         document.querySelector('[data-block-id]') ||
         document.querySelector('.markdown')
@@ -549,6 +605,7 @@
     if (document.getElementById(EXPORT_BUTTON_ID)) return
 
     const hasThread =
+      document.querySelector('[data-transcript-message-role]') ||
       document.querySelector('[data-thread]') ||
       document.querySelector('[data-block-id]') ||
       document.querySelector('.markdown')
