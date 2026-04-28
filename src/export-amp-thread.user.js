@@ -208,9 +208,8 @@
     for (const messageElement of transcriptMessages) {
       const role = messageElement.getAttribute('data-transcript-message-role')
       const content = extractTranscriptMessageContent(messageElement)
-      if (!content || processedTexts.has(content)) continue
+      if (!content) continue
 
-      processedTexts.add(content)
       messages.push({
         role: role === 'user' ? 'You' : 'Amp',
         content,
