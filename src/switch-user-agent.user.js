@@ -196,13 +196,14 @@
   ) => {
     const preset = pickPreset(keywords) || getPresetById(DEFAULT_PRESET_ID)
     const normalizedHostnames = normalizeHostnames(hostnames)
+    const {
+      name,
+      hostnames: _hostnames,
+      hostname: _hostname,
+      ...rest
+    } = overrides
 
     return {
-      name:
-        typeof overrides.name === 'string'
-          ? overrides.name
-          : normalizedHostnames[0] || 'Custom site',
-      hostnames: normalizedHostnames,
       preset: preset.id,
       userAgent: preset.userAgent,
       platform: preset.platform,
@@ -210,7 +211,12 @@
       uaPlatform: preset.uaPlatform,
       mobile: preset.mobile || false,
       brands: preset.brands,
-      ...overrides,
+      ...rest,
+      name:
+        typeof name === 'string'
+          ? name
+          : normalizedHostnames[0] || 'Custom site',
+      hostnames: normalizedHostnames,
     }
   }
 
@@ -248,7 +254,7 @@
     localStorage.setItem(STORAGE_KEY, serializedRules)
   }
 
-  const getRules = () => [...DEFAULT_RULES, ...getStoredRules()]
+  const getRules = () => [...getStoredRules(), ...DEFAULT_RULES]
 
   /** @param {string} pattern */
   const hostnameMatches = (pattern) => {
@@ -282,7 +288,11 @@
     }
 
     if (typeof rule.hrefPattern === 'string') {
-      return new RegExp(rule.hrefPattern).test(location.href)
+      try {
+        return new RegExp(rule.hrefPattern).test(location.href)
+      } catch {
+        return false
+      }
     }
 
     return true
