@@ -1,14 +1,21 @@
 // ==UserScript==
 // @name         Redirect npmjs.com to npmx.dev
 // @namespace    https://npmx.dev/
-// @version      1.4
-// @description  Automatically redirect from npmjs.com to the faster npmx.dev browser. URL paths are fully compatible for package browsing. Append `?noredirect` to any URL to skip redirection.
+// @version      1.5
+// @description  Redirect npmjs.com package browsing to npmx.dev while preserving paths, query strings, hashes, and ?noredirect bypasses.
 // @author       https://github.com/o-az
 // @match        *://npmjs.com/*
 // @match        *://*.npmjs.com/*
 // @icon         https://npmx.dev/favicon.ico
 // @homepageURL  https://github.com/o-az/userscripts
+// @source       https://github.com/o-az/userscripts/blob/main/src/npm-to-npmx.user.js
+// @downloadURL  http://github.com/o-az/userscripts/blob/main/src/npm-to-npmx.user.js?raw=true
+// @updateURL    http://github.com/o-az/userscripts/blob/main/src/npm-to-npmx.user.js?raw=true
 // @supportURL   https://github.com/o-az/userscripts/issues
+// @tag          npm
+// @tag          npmx
+// @tag          redirect
+// @tag          package
 // @license      MIT
 // @grant        none
 // @run-at       document-start

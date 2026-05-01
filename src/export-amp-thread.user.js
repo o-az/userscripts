@@ -1,14 +1,22 @@
 // ==UserScript==
 // @name         Export Amp Thread
 // @namespace    https://ampcode.com/
-// @version      1.3
-// @description  Add an export button to Amp threads to save conversations as text, json, or PDF
+// @version      1.4
+// @description  Export Amp threads as TXT, JSON, or printable PDF from a floating in-page menu.
 // @author       https://github.com/o-az
 // @match        *://ampcode.com/threads/*
 // @match        *://*.ampcode.com/threads/*
 // @icon         https://ampcode.com/favicon.ico
 // @homepageURL  https://github.com/o-az/userscripts
+// @source       https://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js
+// @downloadURL  http://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js?raw=true
+// @updateURL    http://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js?raw=true
 // @supportURL   https://github.com/o-az/userscripts/issues
+// @tag          amp
+// @tag          export
+// @tag          thread
+// @tag          pdf
+// @tag          json
 // @license      MIT
 // @grant        none
 // @run-at       document-idle

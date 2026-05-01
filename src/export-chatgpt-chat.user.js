@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Export ChatGPT Thread
 // @namespace    https://chatgpt.com/
-// @version      1.0
-// @description  Add an export button to ChatGPT threads to save conversations as text, json, or PDF
+// @version      1.1
+// @description  Export ChatGPT conversations as TXT, JSON, or printable PDF, including visible reasoning/status blocks when present.
 // @author       https://github.com/o-az
 // @match        *://chatgpt.com/c/*
 // @match        *://chatgpt.com/g/*/c/*
@@ -10,7 +10,16 @@
 // @match        *://*.chatgpt.com/g/*/c/*
 // @icon         https://chatgpt.com/favicon.ico
 // @homepageURL  https://github.com/o-az/userscripts
+// @source       https://github.com/o-az/userscripts/blob/main/src/export-chatgpt-chat.user.js
+// @downloadURL  http://github.com/o-az/userscripts/blob/main/src/export-chatgpt-chat.user.js?raw=true
+// @updateURL    http://github.com/o-az/userscripts/blob/main/src/export-chatgpt-chat.user.js?raw=true
 // @supportURL   https://github.com/o-az/userscripts/issues
+// @tag          chatgpt
+// @tag          openai
+// @tag          export
+// @tag          chat
+// @tag          pdf
+// @tag          json
 // @license      MIT
 // @grant        none
 // @run-at       document-idle

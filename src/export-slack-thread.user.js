@@ -1,14 +1,23 @@
 // ==UserScript==
 // @name         Export Slack Thread
 // @namespace    https://app.slack.com/
-// @version      1.0
-// @description  Add an export button to Slack thread panels to save conversations as text, JSON, or PDF
+// @version      1.1
+// @description  Export open Slack thread panels as TXT, JSON, or printable PDF, with optional privacy mode anonymization.
 // @author       https://github.com/o-az
 // @match        *://app.slack.com/*
 // @match        *://*.slack.com/*
 // @icon         https://app.slack.com/favicon.ico
 // @homepageURL  https://github.com/o-az/userscripts
+// @source       https://github.com/o-az/userscripts/blob/main/src/export-slack-thread.user.js
+// @downloadURL  http://github.com/o-az/userscripts/blob/main/src/export-slack-thread.user.js?raw=true
+// @updateURL    http://github.com/o-az/userscripts/blob/main/src/export-slack-thread.user.js?raw=true
 // @supportURL   https://github.com/o-az/userscripts/issues
+// @tag          slack
+// @tag          export
+// @tag          thread
+// @tag          pdf
+// @tag          json
+// @tag          privacy
 // @license      MIT
 // @grant        none
 // @run-at       document-idle
