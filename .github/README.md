@@ -2,21 +2,21 @@
 
 ## Available userscripts
 
-### [npmjs.com to npmx.dev](/src/npm-to-npmx.user.js)
-[[greasyfork](https://greasyfork.org/en/scripts/565064-redirect-npmjs-com-to-npmx-dev)] - [once-click install](https://raw.githubusercontent.com/o-az/userscripts/main/src/npm-to-npmx.user.js)
+### [Slack Multi-Emoji Upload](/src/slack-multi-emoji-upload.user.js)
+[[greasyfork](https://greasyfork.org/en/scripts/574905-slack-multi-emoji-upload)] - 
+[one-click-install](http://github.com/o-az/userscripts/blob/main/src/slack-multi-emoji-upload.user.js?raw=true)
 
-Redirects from the barely maintained [npmjs.com](https://npmjs.com) to the more modern [npmx.dev](https://npmx.dev).
+A button in Slack's custom emoji page that lets you upload multiple emojis at once. Best used at `https://$WORKSPACE.slack.com/customize/emoji`.
 
 ### [Export Slack Thread](/src/export-slack-thread.user.js)
 [[greasyfork](https://greasyfork.org/en/scripts/572953-export-slack-thread)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-slack-thread.user.js?raw=true)
 
 A button in [slack.com](https://app.slack.com) threads that lets you export the conversation as PDF, JSON, or TXT.
 
-### [Slack Multi-Emoji Upload](/src/slack-multi-emoji-upload.user.js)
-[[greasyfork](https://greasyfork.org/en/scripts/574905-slack-multi-emoji-upload)] - 
-[one-click-install](http://github.com/o-az/userscripts/blob/main/src/slack-multi-emoji-upload.user.js?raw=true)
+### [Switch User Agent](/src/switch-user-agent.user.js)
+[[greasyfork](https://greasyfork.org/en/scripts/576104-switch-user-agent)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/switch-user-agent.user.js?raw=true)
 
-A button in Slack's custom emoji page that lets you upload multiple emojis at once. Best used at `https://$WORKSPACE.slack.com/customize/emoji`.
+Spoof navigator `user-agent` values for configured websites. Includes `lobste.rs` by default and exposes `SwitchUserAgent` helpers in the console for adding more rules.
 
 ### [Export Claude Chat](/src/export-claude-chat.user.js)
 [[greasyfork](https://greasyfork.org/en/scripts/566017-export-claude-chat)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-claude-chat.user.js?raw=true)
