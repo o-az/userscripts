@@ -9,8 +9,8 @@
 // @icon         https://npmx.dev/favicon.ico
 // @homepageURL  https://github.com/o-az/userscripts
 // @source       https://github.com/o-az/userscripts/blob/main/src/npm-to-npmx.user.js
-// @downloadURL  http://github.com/o-az/userscripts/blob/main/src/npm-to-npmx.user.js?raw=true
-// @updateURL    http://github.com/o-az/userscripts/blob/main/src/npm-to-npmx.user.js?raw=true
+// @downloadURL  https://github.com/o-az/userscripts/blob/main/src/npm-to-npmx.user.js?raw=true
+// @updateURL    https://github.com/o-az/userscripts/blob/main/src/npm-to-npmx.user.js?raw=true
 // @supportURL   https://github.com/o-az/userscripts/issues
 // @tag          npm
 // @tag          npmx

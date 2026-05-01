@@ -4,37 +4,37 @@
 
 ### [Slack Multi-Emoji Upload](/src/slack-multi-emoji-upload.user.js)
 [[greasyfork](https://greasyfork.org/en/scripts/574905-slack-multi-emoji-upload)] - 
-[one-click-install](http://github.com/o-az/userscripts/blob/main/src/slack-multi-emoji-upload.user.js?raw=true)
+[one-click-install](https://github.com/o-az/userscripts/blob/main/src/slack-multi-emoji-upload.user.js?raw=true)
 
 A button in Slack's custom emoji page that lets you upload multiple emojis at once. Best used at `https://$WORKSPACE.slack.com/customize/emoji`.
 
 ### [Export Slack Thread](/src/export-slack-thread.user.js)
-[[greasyfork](https://greasyfork.org/en/scripts/572953-export-slack-thread)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-slack-thread.user.js?raw=true)
+[[greasyfork](https://greasyfork.org/en/scripts/572953-export-slack-thread)] - [one-click-install](https://github.com/o-az/userscripts/blob/main/src/export-slack-thread.user.js?raw=true)
 
 A button in [slack.com](https://app.slack.com) threads that lets you export the conversation as PDF, JSON, or TXT.
 
 ### [Switch User Agent](/src/switch-user-agent.user.js)
-[[greasyfork](https://greasyfork.org/en/scripts/576104-switch-user-agent)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/switch-user-agent.user.js?raw=true)
+[[greasyfork](https://greasyfork.org/en/scripts/576104-switch-user-agent)] - [one-click-install](https://github.com/o-az/userscripts/blob/main/src/switch-user-agent.user.js?raw=true)
 
 Spoof navigator `user-agent` values for configured websites. Includes `lobste.rs` by default and exposes `SwitchUserAgent` helpers in the console for adding more rules.
 
 ### [Export Claude Chat](/src/export-claude-chat.user.js)
-[[greasyfork](https://greasyfork.org/en/scripts/566017-export-claude-chat)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-claude-chat.user.js?raw=true)
+[[greasyfork](https://greasyfork.org/en/scripts/566017-export-claude-chat)] - [one-click-install](https://github.com/o-az/userscripts/blob/main/src/export-claude-chat.user.js?raw=true)
 
 A button in [claude.ai](https://claude.ai) chat that lets you export the chat as PDF, JSON, or TXT.
 
 ### [Export ChatGPT Chat](/src/export-chatgpt-chat.user.js)
-[[greasyfork](https://greasyfork.org/en/scripts/572850-export-chatgpt-thread)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-chatgpt-chat.user.js?raw=true)
+[[greasyfork](https://greasyfork.org/en/scripts/572850-export-chatgpt-thread)] - [one-click-install](https://github.com/o-az/userscripts/blob/main/src/export-chatgpt-chat.user.js?raw=true)
 
 A button in [chatgpt.com](https://chatgpt.com) chats that lets you export the conversation as PDF, TXT, or JSON.
 
 ### [Export Amp Thread](/src/export-amp-thread.user.js)
-[[greasyfork](https://greasyfork.org/en/scripts/571001-export-amp-thread)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js?raw=true)
+[[greasyfork](https://greasyfork.org/en/scripts/571001-export-amp-thread)] - [one-click-install](https://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js?raw=true)
 
 A button in [ampcode.com](https://ampcode.com) threads that lets you export the conversation as PDF, TXT, or JSON.
 
 ### [github.com to better-hub.com](/src/github-to-better-hub.user.js)
-[[greasyfork](https://greasyfork.org/en/scripts/566018-redirect-github-com-to-better-hub-com)] - [one-click-install](http://github.com/o-az/userscripts/blob/main/src/github-to-better-hub.user.js?raw=true)
+[[greasyfork](https://greasyfork.org/en/scripts/566018-redirect-github-com-to-better-hub-com)] - [one-click-install](https://github.com/o-az/userscripts/blob/main/src/github-to-better-hub.user.js?raw=true)
 
 Redirects from the slow and bloated [github.com](https://github.com) to a faster and more modern [better-hub.com](https://better-hub.com). This especially handy for code reviews with large diffs.
 

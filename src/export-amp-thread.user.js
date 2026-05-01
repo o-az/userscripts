@@ -9,8 +9,8 @@
 // @icon         https://ampcode.com/favicon.ico
 // @homepageURL  https://github.com/o-az/userscripts
 // @source       https://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js
-// @downloadURL  http://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js?raw=true
-// @updateURL    http://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js?raw=true
+// @downloadURL  https://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js?raw=true
+// @updateURL    https://github.com/o-az/userscripts/blob/main/src/export-amp-thread.user.js?raw=true
 // @supportURL   https://github.com/o-az/userscripts/issues
 // @tag          amp
 // @tag          export
