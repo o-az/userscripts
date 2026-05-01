@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Switch User Agent
 // @namespace    https://github.com/o-az/userscripts
-// @version      1.0
-// @description  Spoof navigator user-agent values for configured websites. Includes lobste.rs by default and exposes SwitchUserAgent helpers in the console for adding more rules.
+// @version      1.1
+// @description  Spoof navigator user-agent values for configured websites. Includes lobste.rs by default on Brave and exposes SwitchUserAgent helpers in the console for adding more rules.
 // @author       https://github.com/o-az
 // @match        *://*/*
 // @homepageURL  https://github.com/o-az/userscripts
@@ -129,6 +129,14 @@
 
   const DEFAULT_PRESET_ID = 'chrome-windows'
 
+  const isBraveBrowser = () => {
+    const navigatorWithBrave =
+      /** @type {Navigator & { brave?: { isBrave?: () => Promise<boolean> } }} */ (
+        PAGE.navigator
+      )
+    return typeof navigatorWithBrave.brave?.isBrave === 'function'
+  }
+
   /** @param {string | undefined} presetId */
   const getPresetById = (presetId) =>
     UA_PRESETS.find((preset) => preset.id === presetId) ||
@@ -226,9 +234,9 @@
    * Add more sites here when you want the rule to be synced with the userscript:
    * createRule('example.com', 'chrome')
    */
-  const DEFAULT_RULES = [
-    createRule('lobste.rs', 'chrome windows', { name: 'Lobsters' }),
-  ]
+  const DEFAULT_RULES = isBraveBrowser()
+    ? [createRule('lobste.rs', 'chrome windows', { name: 'Lobsters' })]
+    : []
 
   const getStoredRules = () => {
     try {
