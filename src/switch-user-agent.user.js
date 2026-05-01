@@ -1,12 +1,19 @@
 // ==UserScript==
 // @name         Switch User Agent
 // @namespace    https://github.com/o-az/userscripts
-// @version      1.1
-// @description  Spoof navigator user-agent values for configured websites. Includes lobste.rs by default on Brave and exposes SwitchUserAgent helpers in the console for adding more rules.
+// @version      1.2
+// @description  Spoof navigator user-agent values for configured sites; enables lobste.rs by default only on Brave and exposes console helpers.
 // @author       https://github.com/o-az
 // @match        *://*/*
 // @homepageURL  https://github.com/o-az/userscripts
+// @source       https://github.com/o-az/userscripts/blob/main/src/switch-user-agent.user.js
+// @downloadURL  https://github.com/o-az/userscripts/blob/main/src/switch-user-agent.user.js?raw=true
+// @updateURL    https://github.com/o-az/userscripts/blob/main/src/switch-user-agent.user.js?raw=true
 // @supportURL   https://github.com/o-az/userscripts/issues
+// @tag          user-agent
+// @tag          brave
+// @tag          navigator
+// @tag          compatibility
 // @license      MIT
 // @grant        GM_getValue
 // @grant        GM_setValue

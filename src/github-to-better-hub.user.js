@@ -1,13 +1,20 @@
 // ==UserScript==
 // @name         Redirect github.com to better-hub.com
 // @namespace    https://better-hub.com/
-// @version      1.0
-// @description  Automatically redirect from github.com to better-hub.com. URL paths are fully compatible for browsing. Append `?noredirect` to any URL to skip redirection.
+// @version      1.1
+// @description  Redirect github.com browsing to better-hub.com while preserving paths, query strings, hashes, and ?noredirect bypasses.
 // @author       https://github.com/o-az
 // @match        *://github.com/*
 // @icon         https://better-hub.com/favicon.ico
 // @homepageURL  https://github.com/o-az/userscripts
+// @source       https://github.com/o-az/userscripts/blob/main/src/github-to-better-hub.user.js
+// @downloadURL  https://github.com/o-az/userscripts/blob/main/src/github-to-better-hub.user.js?raw=true
+// @updateURL    https://github.com/o-az/userscripts/blob/main/src/github-to-better-hub.user.js?raw=true
 // @supportURL   https://github.com/o-az/userscripts/issues
+// @tag          github
+// @tag          better-hub
+// @tag          redirect
+// @tag          code-review
 // @license      MIT
 // @grant        none
 // @run-at       document-start

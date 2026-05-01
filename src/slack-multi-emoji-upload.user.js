@@ -1,14 +1,21 @@
 // ==UserScript==
 // @name         Slack Multi-Emoji Upload
 // @namespace    https://app.slack.com/
-// @version      1.1
-// @description  Lets you upload multiple emojis at once to your Slack workspace
+// @version      1.2
+// @description  Batch upload custom Slack emoji from multiple image files with progress, failure counts, and cancellation.
 // @author       https://github.com/o-az
 // @match        *://app.slack.com/*
 // @match        *://*.slack.com/*
 // @icon         https://app.slack.com/favicon.ico
 // @homepageURL  https://github.com/o-az/userscripts
+// @source       https://github.com/o-az/userscripts/blob/main/src/slack-multi-emoji-upload.user.js
+// @downloadURL  https://github.com/o-az/userscripts/blob/main/src/slack-multi-emoji-upload.user.js?raw=true
+// @updateURL    https://github.com/o-az/userscripts/blob/main/src/slack-multi-emoji-upload.user.js?raw=true
 // @supportURL   https://github.com/o-az/userscripts/issues
+// @tag          slack
+// @tag          emoji
+// @tag          upload
+// @tag          batch
 // @license      MIT
 // @grant        none
 // @run-at       document-idle

@@ -1,14 +1,22 @@
 // ==UserScript==
 // @name         Export Claude Chat
 // @namespace    https://claude.ai/
-// @version      1.2
-// @description  Add an export button to Claude.ai conversations to save chats as text, json, or PDF
+// @version      1.3
+// @description  Export Claude conversations as TXT, JSON, or printable PDF from a floating in-page menu.
 // @author       https://github.com/o-az
 // @match        *://claude.ai/*
 // @match        *://*.claude.ai/*
 // @icon         https://claude.ai/favicon.ico
 // @homepageURL  https://github.com/o-az/userscripts
+// @source       https://github.com/o-az/userscripts/blob/main/src/export-claude-chat.user.js
+// @downloadURL  https://github.com/o-az/userscripts/blob/main/src/export-claude-chat.user.js?raw=true
+// @updateURL    https://github.com/o-az/userscripts/blob/main/src/export-claude-chat.user.js?raw=true
 // @supportURL   https://github.com/o-az/userscripts/issues
+// @tag          claude
+// @tag          export
+// @tag          chat
+// @tag          pdf
+// @tag          json
 // @license      MIT
 // @grant        none
 // @run-at       document-idle
