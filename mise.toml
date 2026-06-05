@@ -1,0 +1,29 @@
+#:schema https://mise.en.dev/schema/mise.json
+
+settings.experimental = true
+
+[tools]
+bun = "latest"
+tombi = "latest"
+biome = "latest"
+actionlint = "latest"
+
+[tasks]
+[tasks.format]
+run = """
+tombi format **/*.toml
+biome format --write .
+"""
+
+[tasks.lint]
+run = """
+biome lint --write .
+tombi lint mise.toml
+actionlint .github/workflows/*.yml
+"""
+
+[tasks.fml]
+depends = ["format", "lint"]
+
+[env]
+DISABLE_TELEMETRY = 1

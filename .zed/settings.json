@@ -1,0 +1,198 @@
+{
+  "file_types": {
+    "ini": [
+      ".npmrc"
+    ],
+    "env": [
+      ".env",
+      ".env.*"
+    ]
+  },
+  "hidden_files": [
+    "**/.git",
+    "**/.pi",
+    "**/*.egg*",
+    "**/.venv",
+    "**/.wrangler",
+    "**/.ruff_cache",
+    "**/__pycache__"
+  ],
+  "file_scan_exclusions": [
+    "**/.pi",
+    "**/.git",
+    "**/*.egg*",
+    "**/.venv",
+    "**/.wrangler",
+    "**/.ruff_cache",
+    "**/__pycache__"
+  ],
+  "lsp": {
+    "biome": {
+      "fetch": {
+        "pre_release": true
+      }
+    },
+    "tombi": {
+      "fetch": {
+        "pre_release": true
+      },
+      "binary": {
+        "arguments": [
+          "lsp",
+          "-v"
+        ],
+        "env": {
+          "NO_COLOR": "true"
+        },
+        "ignore_system_version": false
+      }
+    }
+  },
+  "languages": {
+    "TOML": {
+      "format_on_save": "on",
+      "language_servers": [
+        "tombi"
+      ],
+      "show_edit_predictions": false,
+      "formatter": {
+        "language_server": {
+          "name": "tombi"
+        }
+      }
+    },
+    "HTML": {
+      "format_on_save": "on",
+      "language_servers": [
+        "biome",
+        "vscode-html-language-server"
+      ],
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "biome"
+          }
+        }
+      ]
+    },
+    "Markdown": {
+      "language_servers": [
+        "typescript-language-server",
+        "biome",
+        "markdown-oxide"
+      ],
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "biome"
+          }
+        }
+      ]
+    },
+    "JSON": {
+      "format_on_save": "on",
+      "language_servers": [
+        "json-language-server",
+        "biome"
+      ],
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "biome"
+          }
+        }
+      ]
+    },
+    "JSONC": {
+      "format_on_save": "on",
+      "language_servers": [
+        "json-language-server",
+        "biome"
+      ],
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "biome"
+          }
+        }
+      ]
+    },
+    "JSDoc": {
+      "language_servers": [
+        "typescript-language-server",
+        "biome"
+      ],
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "biome"
+          }
+        }
+      ]
+    },
+    "JavaScript": {
+      "format_on_save": "on",
+      "language_servers": [
+        "typescript-language-server",
+        "biome"
+      ],
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "biome"
+          }
+        }
+      ]
+    },
+    "TypeScript": {
+      "format_on_save": "on",
+      "language_servers": [
+        "typescript-language-server",
+        "biome"
+      ],
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "biome"
+          }
+        }
+      ]
+    },
+    "YAML": {
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "biome"
+          }
+        }
+      ]
+    }
+  }
+}
