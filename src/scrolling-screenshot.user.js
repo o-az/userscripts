@@ -1655,15 +1655,49 @@
     }
   }
 
+  /**
+   * The innermost scrollable area at a point. Sites often put the visible content of
+   * a scroller in a sibling layer on top of it (X's chat does), so the elements under
+   * the point aren't always inside the scroller; fall back to geometry.
+   * @param {number} x @param {number} y
+   */
+  const scrollableAt = (x, y) => {
+    const hits = document
+      .elementsFromPoint(x, y)
+      .filter((el) => el !== ui?.host)
+    for (const hit of hits) {
+      const found = resolveScrollTarget(hit)
+      if (found && !isDocumentTarget(found)) return found
+    }
+    /** @type {Element | null} */
+    let best = null
+    let bestArea = Number.POSITIVE_INFINITY
+    for (const el of document.body.querySelectorAll('*')) {
+      if (el === ui?.host) continue
+      const rect = el.getBoundingClientRect()
+      const area = rect.width * rect.height
+      if (
+        area >= bestArea ||
+        x < rect.left ||
+        x > rect.right ||
+        y < rect.top ||
+        y > rect.bottom ||
+        !isScrollableY(el)
+      )
+        continue
+      best = el
+      bestArea = area
+    }
+    if (best) return best
+    return isScrollableY(scrollingElement()) ? scrollingElement() : null
+  }
+
   /** @param {MouseEvent} event */
   function onCatcherClick(event) {
     if (!ui) return
     ui.catcher.style.display = 'none'
-    const hit = document
-      .elementsFromPoint(event.clientX, event.clientY)
-      .find((el) => el !== ui?.host)
+    const scrollable = scrollableAt(event.clientX, event.clientY)
     ui.catcher.style.display = 'block'
-    const scrollable = resolveScrollTarget(hit ?? null)
     if (!scrollable) {
       toast('No scrollable area there')
       return
