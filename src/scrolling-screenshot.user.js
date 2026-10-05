@@ -1724,6 +1724,55 @@
     return isScrollableY(scrollingElement()) ? scrollingElement() : null
   }
 
+  // Temporary: diagnostics for sites where picking fails.
+  /** @param {number} x @param {number} y */
+  const pickDebugInfo = (x, y) => {
+    /** @param {Element} el */
+    const describe = (el) => {
+      const style = getComputedStyle(el)
+      const rect = el.getBoundingClientRect()
+      return [
+        el.tagName,
+        el.id,
+        el.getAttribute('data-testid') || '',
+        String(el.className).slice(0, 40),
+        style.overflowY,
+        el.scrollHeight,
+        el.clientHeight,
+        el.scrollTop,
+        Math.round(rect.top),
+        Math.round(rect.height),
+        style.backgroundColor,
+        paintsBackground(el),
+      ].join('|')
+    }
+    const hits = document
+      .elementsFromPoint(x, y)
+      .filter((el) => el !== ui?.host)
+    const overflowing = [...document.querySelectorAll('*')]
+      .filter(
+        (el) =>
+          el !== ui?.host &&
+          el.scrollHeight > el.clientHeight + 1 &&
+          el.clientHeight > 0,
+      )
+      .slice(0, 40)
+    return JSON.stringify(
+      {
+        point: [x, y],
+        viewport: [window.innerWidth, window.innerHeight],
+        scrollingElement: scrollingElement().tagName,
+        documentScroll: [scrollingElement().scrollHeight, window.scrollY],
+        inFrame: window.top !== window,
+        hits: hits.slice(0, 25).map(describe),
+        overflowing: overflowing.map(describe),
+        ua: navigator.userAgent,
+      },
+      null,
+      1,
+    )
+  }
+
   /** @param {MouseEvent} event */
   function onCatcherClick(event) {
     if (!ui) return
@@ -1731,7 +1780,12 @@
     const scrollable = scrollableAt(event.clientX, event.clientY)
     ui.catcher.style.display = 'block'
     if (!scrollable) {
-      toast('No scrollable area there')
+      const info = pickDebugInfo(event.clientX, event.clientY)
+      console.info('[scrolling-screenshot] pick debug', info)
+      navigator.clipboard?.writeText(info).then(
+        () => toast('No scrollable area there (debug info copied)'),
+        () => toast('No scrollable area there'),
+      )
       return
     }
     candidate = scrollable
