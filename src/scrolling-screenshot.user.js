@@ -64,6 +64,7 @@
   }} */ (globalThis)
 
   const ROOT_ID = 'scrolling-screenshot-root'
+  const SHADOW_SEP = ' >>> '
   const SETTINGS_KEY = 'scrolling-screenshot.settings.v1'
   const AREAS_KEY = 'scrolling-screenshot.areas.v1'
   // iOS Safari caps canvases at 16,777,216 pixels; other browsers cap a side at ~32k.
@@ -153,6 +154,54 @@
     el === document.documentElement ||
     el === document.body
 
+  /**
+   * Parent element, stepping out of shadow roots to their host.
+   * @param {Element} el
+   * @returns {Element | null}
+   */
+  const parentOf = (el) =>
+    el.parentElement ||
+    (el.parentNode instanceof ShadowRoot ? el.parentNode.host : null)
+
+  /** @param {Element} el */
+  const isOwnUi = (el) => el === ui?.host
+
+  /**
+   * Every element in the document, including inside open shadow roots.
+   * @param {Document | ShadowRoot} [root]
+   * @returns {Element[]}
+   */
+  const allElements = (root = document) => {
+    /** @type {Element[]} */
+    const out = []
+    for (const el of root.querySelectorAll('*')) {
+      if (isOwnUi(el)) continue
+      out.push(el)
+      if (el.shadowRoot) out.push(...allElements(el.shadowRoot))
+    }
+    return out
+  }
+
+  /**
+   * elementsFromPoint that also looks inside open shadow roots (innermost first).
+   * @param {number} x @param {number} y @param {Document | ShadowRoot} [root]
+   * @returns {Element[]}
+   */
+  const elementsAt = (x, y, root = document) => {
+    /** @type {Element[]} */
+    const out = []
+    for (const el of root.elementsFromPoint(x, y)) {
+      if (isOwnUi(el) || out.includes(el)) continue
+      if (el.shadowRoot && el.shadowRoot !== root) {
+        for (const inner of elementsAt(x, y, el.shadowRoot)) {
+          if (!out.includes(inner)) out.push(inner)
+        }
+      }
+      if (!out.includes(el)) out.push(el)
+    }
+    return out
+  }
+
   /** @param {Element} el */
   const isScrollableY = (el) => {
     if (isDocumentTarget(el)) {
@@ -177,7 +226,7 @@
     while (el) {
       if (isDocumentTarget(el)) break
       if (isScrollableY(el)) return el
-      el = el.parentElement
+      el = parentOf(el)
     }
     return isScrollableY(scrollingElement()) ? scrollingElement() : null
   }
@@ -185,7 +234,7 @@
   /** @param {Element} el */
   const nextScrollableAncestor = (el) => {
     if (isDocumentTarget(el)) return null
-    return resolveScrollTarget(el.parentElement)
+    return resolveScrollTarget(parentOf(el))
   }
 
   /** @param {Element} el */
@@ -258,7 +307,7 @@
       if (color && color !== 'transparent' && !/rgba\(.*,\s*0\)$/.test(color)) {
         return color
       }
-      node = node.parentElement
+      node = parentOf(node)
     }
     return '#ffffff'
   }
@@ -266,35 +315,43 @@
   /** @param {Element} el */
   const selectorFor = (el) => {
     if (isDocumentTarget(el)) return ':root'
+    // One selector per tree, outermost first, joined by SHADOW_SEP for open shadow roots.
     /** @type {string[]} */
-    const parts = []
+    const trees = []
+    /** @type {string[]} */
+    let parts = []
     /** @type {Element | null} */
     let node = el
     while (node && node !== document.documentElement) {
+      const root = node.getRootNode()
+      const scope = root instanceof ShadowRoot ? root : document
+      const current = node
       if (
         node.id &&
-        document.querySelectorAll(`#${CSS.escape(node.id)}`).length === 1
+        scope.querySelectorAll(`#${CSS.escape(node.id)}`).length === 1
       ) {
         parts.unshift(`#${CSS.escape(node.id)}`)
-        break
+      } else {
+        let part = node.localName
+        const testId = node.getAttribute('data-testid')
+        if (testId) part += `[data-testid="${CSS.escape(testId)}"]`
+        const siblings = Array.from(
+          node.parentElement?.children ?? scope.children,
+        ).filter((child) => child.localName === current.localName)
+        if (siblings.length > 1)
+          part += `:nth-of-type(${siblings.indexOf(current) + 1})`
+        parts.unshift(part)
+        if (node.parentElement) {
+          node = node.parentElement
+          continue
+        }
       }
-      let part = node.localName
-      const testId = node.getAttribute('data-testid')
-      if (testId) part += `[data-testid="${CSS.escape(testId)}"]`
-      /** @type {Element | null} */
-      const parent = node.parentElement
-      const current = node
-      if (parent) {
-        const sameTag = Array.from(parent.children).filter(
-          (child) => child.localName === current.localName,
-        )
-        if (sameTag.length > 1)
-          part += `:nth-of-type(${sameTag.indexOf(current) + 1})`
-      }
-      parts.unshift(part)
-      node = parent
+      trees.unshift(parts.join(' > '))
+      parts = []
+      node = root instanceof ShadowRoot ? root.host : null
     }
-    return parts.join(' > ')
+    if (parts.length) trees.unshift(parts.join(' > '))
+    return trees.join(SHADOW_SEP)
   }
 
   const rememberedTarget = () => {
@@ -304,7 +361,15 @@
       const el =
         selector === ':root'
           ? scrollingElement()
-          : document.querySelector(selector)
+          : selector
+              .split(SHADOW_SEP)
+              .reduce(
+                (/** @type {Element | null} */ found, part, index) =>
+                  index === 0
+                    ? document.querySelector(part)
+                    : (found?.shadowRoot?.querySelector(part) ?? null),
+                null,
+              )
       return el && isScrollableY(el) ? el : null
     } catch {
       return null
@@ -615,6 +680,30 @@
   let generation = 0
   let autoRun = 0
 
+  /** @type {Array<Document | ShadowRoot>} */
+  let scrollRoots = []
+
+  // Scroll events don't cross shadow boundaries, so listen on each open shadow root too.
+  const listenScroll = () => {
+    unlistenScroll()
+    scrollRoots = [document]
+    for (const el of allElements())
+      if (el.shadowRoot) scrollRoots.push(el.shadowRoot)
+    for (const root of scrollRoots) {
+      root.addEventListener('scroll', onScroll, {
+        capture: true,
+        passive: true,
+      })
+    }
+  }
+
+  const unlistenScroll = () => {
+    for (const root of scrollRoots) {
+      root.removeEventListener('scroll', onScroll, true)
+    }
+    scrollRoots = []
+  }
+
   const resetSession = () => {
     clearTimeout(idleTimer)
     clearTimeout(edgeTimer)
@@ -622,7 +711,7 @@
     cancelAnimationFrame(highlightRaf)
     observer?.disconnect()
     observer = null
-    document.removeEventListener('scroll', onScroll, true)
+    unlistenScroll()
     document.removeEventListener('keydown', onKeydown, true)
     for (const part of parts) URL.revokeObjectURL(part.url)
     target = null
@@ -665,10 +754,7 @@
     resetSession()
     sessionScale = outputScale()
     candidate = settings.confirmArea ? rememberedTarget() : null
-    document.addEventListener('scroll', onScroll, {
-      capture: true,
-      passive: true,
-    })
+    listenScroll()
     document.addEventListener('keydown', onKeydown, true)
     setState('armed')
     trackHighlight()
@@ -744,7 +830,7 @@
     while (node && node !== target) {
       const { position: pos } = getComputedStyle(node)
       if (pos === 'fixed' || pos === 'sticky') return true
-      node = node.parentElement
+      node = parentOf(node)
     }
     return false
   }
@@ -766,8 +852,8 @@
       for (const fy of [0.15, 0.5, 0.85]) {
         const x = left + (right - left) * fx
         const y = top + (bottom - top) * fy
-        for (const el of document.elementsFromPoint(x, y)) {
-          if (el === ui?.host || el === target) continue
+        for (const el of elementsAt(x, y)) {
+          if (el === target) continue
           if (
             isDoc
               ? el === document.documentElement || el === document.body
@@ -1215,7 +1301,7 @@
     while (busy) await sleep(50)
     await captureIfNeeded()
     observer?.disconnect()
-    document.removeEventListener('scroll', onScroll, true)
+    unlistenScroll()
     if (!frames.length) {
       toast('Nothing captured')
       cancel()
@@ -1692,9 +1778,7 @@
    * @param {number} x @param {number} y
    */
   const scrollableAt = (x, y) => {
-    const hits = document
-      .elementsFromPoint(x, y)
-      .filter((el) => el !== ui?.host)
+    const hits = elementsAt(x, y)
     for (const hit of hits) {
       const found = resolveScrollTarget(hit)
       if (found && !isDocumentTarget(found)) return found
@@ -1704,8 +1788,7 @@
     /** @type {Element | null} */
     let best = null
     let bestArea = Number.POSITIVE_INFINITY
-    for (const el of document.body.querySelectorAll('*')) {
-      if (el === ui?.host) continue
+    for (const el of allElements()) {
       const rect = el.getBoundingClientRect()
       const area = rect.width * rect.height
       if (
@@ -1746,17 +1829,14 @@
         paintsBackground(el),
       ].join('|')
     }
-    const hits = document
-      .elementsFromPoint(x, y)
-      .filter((el) => el !== ui?.host)
-    const overflowing = [...document.querySelectorAll('*')]
+    const hits = elementsAt(x, y)
+    const all = allElements()
+    const overflowing = all
       .filter(
-        (el) =>
-          el !== ui?.host &&
-          el.scrollHeight > el.clientHeight + 1 &&
-          el.clientHeight > 0,
+        (el) => el.scrollHeight > el.clientHeight + 1 && el.clientHeight > 0,
       )
       .slice(0, 40)
+    const embed = document.querySelector('[data-testid="xchatEmbedRoute"]')
     return JSON.stringify(
       {
         point: [x, y],
@@ -1764,6 +1844,15 @@
         scrollingElement: scrollingElement().tagName,
         documentScroll: [scrollingElement().scrollHeight, window.scrollY],
         inFrame: window.top !== window,
+        shadowHosts: all.filter((el) => el.shadowRoot).length,
+        embed: embed && {
+          children: embed.children.length,
+          html: embed.innerHTML.slice(0, 300),
+          firstChildShadow: embed.firstElementChild
+            ? String(embed.firstElementChild.shadowRoot)
+            : null,
+          iframes: embed.querySelectorAll('iframe').length,
+        },
         hits: hits.slice(0, 25).map(describe),
         overflowing: overflowing.map(describe),
         ua: navigator.userAgent,
