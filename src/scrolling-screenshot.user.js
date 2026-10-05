@@ -476,6 +476,8 @@
       align-items: center;
       gap: 8px;
       padding: 12px;
+      max-height: 40vh;
+      overflow-y: auto;
       border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     }
     .result header .label { flex: 1 1 100%; font-size: 13px; opacity: 0.8; }
@@ -606,6 +608,7 @@
   /** @type {Part[]} */
   let parts = []
   let resultInfo = ''
+  let resultStem = ''
   /** Locked at start so a settings change mid-capture can't mix frame scales. */
   let sessionScale = 0
   /** Bumped on reset so stale async work (stitching, auto-scroll) can bail. */
@@ -1232,6 +1235,7 @@
       parts = stitched
       const first = parts[0]
       const totalHeight = parts.reduce((sum, part) => sum + part.height, 0)
+      resultStem = fileStem()
       resultInfo = [
         first ? `${first.width} × ${totalHeight.toLocaleString()} px` : '',
         `${frames.length} frame${frames.length === 1 ? '' : 's'}`,
@@ -1394,7 +1398,7 @@
 
   /** @param {string} action */
   const runResultAction = async (action) => {
-    const stem = fileStem()
+    const stem = resultStem || fileStem()
     if (action === 'png') {
       for (const file of pngFiles(stem)) download(file, file.name)
       return
