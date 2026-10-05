@@ -35,6 +35,7 @@
    *   url: string
    *   method?: string
    *   responseType?: 'blob'
+   *   anonymous?: boolean
    *   timeout?: number
    *   onload?: (response: { status: number, response: unknown }) => void
    *   onerror?: () => void
@@ -137,7 +138,9 @@
   }
 
   const outputScale = () =>
-    settings.scale || Math.min(2, Math.max(1, window.devicePixelRatio || 1))
+    sessionScale ||
+    settings.scale ||
+    Math.min(2, Math.max(1, window.devicePixelRatio || 1))
 
   /* ------------------------------ scroll targets ------------------------------ */
 
@@ -329,9 +332,13 @@
    */
   const fetchAsset = (url) => {
     const request = GLOBAL.GM_xmlhttpRequest
-    if (!request || /^(data|blob):/i.test(url)) return Promise.resolve(false)
+    if (!request) return Promise.resolve(false)
     try {
-      if (new URL(url, location.href).origin === location.origin) {
+      const parsed = new URL(url, location.href)
+      if (
+        !/^https?:$/.test(parsed.protocol) ||
+        parsed.origin === location.origin
+      ) {
         return Promise.resolve(false)
       }
     } catch {
@@ -345,6 +352,8 @@
         url,
         method: 'GET',
         responseType: 'blob',
+        // No cookies: page-supplied URLs must not get the user's credentials.
+        anonymous: true,
         timeout: 15_000,
         onload: (response) => {
           if (response.status >= 400 || !(response.response instanceof Blob)) {
@@ -364,7 +373,15 @@
   /* ----------------------------------- UI ------------------------------------ */
 
   const STYLES = /* css */ `
-    :host { all: initial; }
+    :host {
+      all: initial;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      z-index: 2147483647;
+    }
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
     .highlight {
       position: fixed;
@@ -589,6 +606,11 @@
   /** @type {Part[]} */
   let parts = []
   let resultInfo = ''
+  /** Locked at start so a settings change mid-capture can't mix frame scales. */
+  let sessionScale = 0
+  /** Bumped on reset so stale async work (stitching, auto-scroll) can bail. */
+  let generation = 0
+  let autoRun = 0
 
   const resetSession = () => {
     clearTimeout(idleTimer)
@@ -617,6 +639,8 @@
     renderErrors = 0
     updateRaf = 0
     highlightRaf = 0
+    sessionScale = 0
+    generation++
   }
 
   /** @param {State} next */
@@ -636,6 +660,7 @@
     }
     ensureUi()
     resetSession()
+    sessionScale = outputScale()
     candidate = settings.confirmArea ? rememberedTarget() : null
     document.addEventListener('scroll', onScroll, {
       capture: true,
@@ -1043,12 +1068,23 @@
     if (!target) return
     clearTimeout(idleTimer)
     clearTimeout(edgeTimer)
+    const run = ++autoRun
     autoDirection = direction
     renderPill()
-    while (autoDirection === direction && state === 'capturing' && target) {
+    while (
+      run === autoRun &&
+      autoDirection === direction &&
+      state === 'capturing' &&
+      target
+    ) {
       while (busy) await sleep(50)
       await captureIfNeeded()
-      if (autoDirection !== direction || state !== 'capturing') break
+      if (
+        run !== autoRun ||
+        autoDirection !== direction ||
+        state !== 'capturing'
+      )
+        break
       const step = captureHeightOf(target) * AUTO_SCROLL_STEP * direction
       const before = getScrollTop(target)
       const heightBefore = target.scrollHeight
@@ -1071,12 +1107,14 @@
       updatePosition()
       if (Math.abs(getScrollTop(target) - before) >= 1) continue
       await captureIfNeeded()
+      if (run !== autoRun) return
       autoDirection = 0
       if (settings.autoStop && state === 'capturing') {
         await finish()
         return
       }
     }
+    if (run !== autoRun) return
     autoDirection = 0
     renderPill()
   }
@@ -1172,7 +1210,7 @@
     clearTimeout(idleTimer)
     clearTimeout(edgeTimer)
     while (busy) await sleep(50)
-    if (pendingCapture || !frames.length) await captureIfNeeded()
+    await captureIfNeeded()
     observer?.disconnect()
     document.removeEventListener('scroll', onScroll, true)
     if (!frames.length) {
@@ -1185,7 +1223,13 @@
       const minY = coverage[0]?.[0] ?? 0
       const maxY = coverage[coverage.length - 1]?.[1] ?? 0
       const gaps = uncovered([minY, maxY]).length
-      parts = await stitch()
+      const session = generation
+      const stitched = await stitch()
+      if (session !== generation) {
+        for (const part of stitched) URL.revokeObjectURL(part.url)
+        return
+      }
+      parts = stitched
       const first = parts[0]
       const totalHeight = parts.reduce((sum, part) => sum + part.height, 0)
       resultInfo = [
