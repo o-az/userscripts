@@ -1396,7 +1396,12 @@
   const runResultAction = async (action) => {
     const stem = fileStem()
     if (action === 'png') {
-      for (const file of pngFiles(stem)) download(file, file.name)
+      const files = pngFiles(stem)
+      // Safari only keeps the last of several back-to-back downloads.
+      for (const [index, file] of files.entries()) {
+        if (index) await new Promise((resolve) => setTimeout(resolve, 1500))
+        download(file, file.name)
+      }
       return
     }
     if (action === 'pdf') {
