@@ -1396,12 +1396,12 @@
   const runResultAction = async (action) => {
     const stem = fileStem()
     if (action === 'png') {
-      const files = pngFiles(stem)
-      // Safari only keeps the last of several back-to-back downloads.
-      for (const [index, file] of files.entries()) {
-        if (index) await new Promise((resolve) => setTimeout(resolve, 1500))
-        download(file, file.name)
-      }
+      for (const file of pngFiles(stem)) download(file, file.name)
+      return
+    }
+    if (action.startsWith('png:')) {
+      const file = pngFiles(stem)[Number(action.slice(4))]
+      if (file) download(file, file.name)
       return
     }
     if (action === 'pdf') {
@@ -1571,7 +1571,17 @@
     result.innerHTML = /* html */ `
       <header>
         <span class="label">${escapeHtml(resultInfo)}</span>
-        <button data-action="png" data-primary>Save PNG</button>
+        ${
+          // Safari drops all but the last of several downloads started by one tap.
+          parts.length > 1
+            ? parts
+                .map(
+                  (_, index) =>
+                    `<button data-action="png:${index}"${index ? '' : ' data-primary'}>Save PNG ${index + 1}/${parts.length}</button>`,
+                )
+                .join('')
+            : '<button data-action="png" data-primary>Save PNG</button>'
+        }
         <button data-action="pdf">Save PDF</button>
         ${canShare ? '<button data-action="share">Share</button>' : ''}
         ${canCopy ? '<button data-action="copy">Copy</button>' : ''}
