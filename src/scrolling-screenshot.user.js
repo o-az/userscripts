@@ -1655,6 +1655,17 @@
     }
   }
 
+  /** @param {Element} el */
+  const paintsBackground = (el) => {
+    const style = getComputedStyle(el)
+    const alpha = style.backgroundColor.match(/[\d.]+/g)?.[3]
+    return (
+      (style.backgroundColor !== 'transparent' && alpha !== '0') ||
+      style.backgroundImage !== 'none' ||
+      (style.backdropFilter || 'none') !== 'none'
+    )
+  }
+
   /**
    * The innermost scrollable area at a point. Sites often put the visible content of
    * a scroller in a sibling layer on top of it (X's chat does), so the elements under
@@ -1668,6 +1679,8 @@
     for (const hit of hits) {
       const found = resolveScrollTarget(hit)
       if (found && !isDocumentTarget(found)) return found
+      // Only see through layers that don't paint over what's beneath (e.g. not modals).
+      if (paintsBackground(hit)) return found
     }
     /** @type {Element | null} */
     let best = null
