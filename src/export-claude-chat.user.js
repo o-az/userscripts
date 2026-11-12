@@ -220,12 +220,8 @@
     }
     if (parts.length > 0) return parts.join('\n\n')
 
-    // No markdown blocks (older layout) — strip the noise and read the rest.
-    const clone = /** @type {HTMLElement} */ (messageElement.cloneNode(true))
-    for (const noise of clone.querySelectorAll(ASSISTANT_NOISE_SELECTOR)) {
-      noise.remove()
-    }
-    return (clone.textContent ?? '').trim()
+    // No markdown blocks (older layout): read the rendered text so line breaks survive.
+    return readText(messageElement)
   }
 
   /**
