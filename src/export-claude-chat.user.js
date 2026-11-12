@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Export Claude Chat
 // @namespace    https://claude.ai/
-// @version      1.3
+// @version      1.4
 // @description  Export Claude conversations as TXT, JSON, or printable PDF from a floating in-page menu.
 // @author       https://github.com/o-az
 // @match        *://claude.ai/*
@@ -188,131 +188,109 @@
     }
   })
 
+  const USER_MESSAGE_SELECTOR = '[data-testid="user-message"]'
+  // claude.ai (late 2025) wraps replies in [data-testid="assistant-message"]; the old
+  // `font-claude-response` class now only survives as a CSS variable name, so it is a
+  // fallback for older builds only.
+  const ASSISTANT_MESSAGE_SELECTOR =
+    '[data-testid="assistant-message"], .font-claude-response'
+  // Rendered markdown blocks inside a reply. Reading these (instead of the whole
+  // message) skips the sr-only "Claude responded:" heading, the collapsed thinking
+  // block and the copy/retry action bar.
+  const ASSISTANT_TEXT_SELECTOR =
+    '[data-perf-reply-text], .standard-markdown, .font-claude-response'
+  const ASSISTANT_NOISE_SELECTOR =
+    '[data-testid="message-actions"], [data-cds="TurnStatus"], [data-find-omitted], .sr-only'
+
+  /** @param {Element} element */
+  function readText(element) {
+    return /** @type {HTMLElement} */ (element).innerText?.trim() ?? ''
+  }
+
+  /** @param {Element} messageElement */
+  function readAssistantText(messageElement) {
+    const blocks = messageElement.querySelectorAll(ASSISTANT_TEXT_SELECTOR)
+    const parts = []
+    for (const block of blocks) {
+      // Skip nested matches so the same text is not collected twice
+      if (block.parentElement?.closest(ASSISTANT_TEXT_SELECTOR)) continue
+      if (block.closest(ASSISTANT_NOISE_SELECTOR)) continue
+      const text = readText(block)
+      if (text) parts.push(text)
+    }
+    if (parts.length > 0) return parts.join('\n\n')
+
+    // No markdown blocks (older layout): read the rendered text so line breaks survive.
+    return readText(messageElement)
+  }
+
+  /**
+   * @param {Element} element
+   * @returns {{role: 'You' | 'Claude', element: Element} | null}
+   */
+  function classifyMessage(element) {
+    if (element.matches(USER_MESSAGE_SELECTOR)) {
+      return { role: 'You', element }
+    }
+    if (element.matches(ASSISTANT_MESSAGE_SELECTOR)) {
+      return { role: 'Claude', element }
+    }
+    const user = element.querySelector(USER_MESSAGE_SELECTOR)
+    if (user) return { role: 'You', element: user }
+    const assistant = element.querySelector(ASSISTANT_MESSAGE_SELECTOR)
+    if (assistant) return { role: 'Claude', element: assistant }
+    return null
+  }
+
+  function findMessageElements() {
+    // Preferred: transcript rows keep user and assistant turns in display order.
+    const rows = document.querySelectorAll('[data-testid="transcript-row"]')
+    if (rows.length > 0) return Array.from(rows)
+
+    // Fallback: collect both kinds of message and sort them by document position.
+    const elements = Array.from(
+      document.querySelectorAll(
+        `${USER_MESSAGE_SELECTOR}, ${ASSISTANT_MESSAGE_SELECTOR}`,
+      ),
+    )
+    return elements
+      .filter(
+        (element) =>
+          !element.parentElement?.closest(
+            `${USER_MESSAGE_SELECTOR}, ${ASSISTANT_MESSAGE_SELECTOR}`,
+          ),
+      )
+      .sort((a, b) =>
+        a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING
+          ? -1
+          : 1,
+      )
+  }
+
   function extractChatContent() {
+    /** @type {Array<{role: string, content: string, timestamp: string}>} */
     const messages = []
-    const processedTexts = new Set()
+    const seen = new Set()
 
-    // Strategy 1: Find user messages by data-testid, then look for nearby Claude responses
-    const userMessageElements = document.querySelectorAll(
-      '[data-testid="user-message"]',
-    )
+    for (const element of findMessageElements()) {
+      const message = classifyMessage(element)
+      if (!message) continue
 
-    for (const userEl of userMessageElements) {
-      // Get user message text
-      const userText = /** @type {HTMLElement} */ (userEl).innerText?.trim()
-      if (userText && !processedTexts.has(userText)) {
-        processedTexts.add(userText)
-        messages.push({
-          role: 'You',
-          content: userText,
-          timestamp: new Date().toISOString(),
-        })
-      }
+      const content =
+        message.role === 'You'
+          ? readText(message.element)
+          : readAssistantText(message.element)
+      if (!content) continue
 
-      // Find Claude's response - it's typically in a sibling or nearby container
-      // Look for the font-claude-response class
-      let parent = userEl.parentElement
-      let claudeResponse = null
+      const key = `${message.role}\u0000${content}`
+      if (seen.has(key)) continue
+      seen.add(key)
 
-      // Walk up to find container with both messages
-      while (parent && !claudeResponse) {
-        // Check siblings after the user message container
-        let sibling = parent.nextElementSibling
-        while (sibling) {
-          const claudeEl = sibling.querySelector(
-            '.font-claude-response, [class*="font-claude-response"]',
-          )
-          if (claudeEl) {
-            claudeResponse = claudeEl
-            break
-          }
-          // Also check if the sibling itself has the class
-          if (
-            sibling.classList.contains('font-claude-response') ||
-            sibling.matches('[class*="font-claude-response"]')
-          ) {
-            claudeResponse = sibling
-            break
-          }
-          sibling = sibling.nextElementSibling
-        }
-        if (!claudeResponse) {
-          parent = parent.parentElement
-        }
-      }
-
-      if (claudeResponse) {
-        const claudeText = /** @type {HTMLElement} */ (
-          claudeResponse
-        ).innerText?.trim()
-        if (claudeText && !processedTexts.has(claudeText)) {
-          processedTexts.add(claudeText)
-          messages.push({
-            role: 'Claude',
-            content: claudeText,
-            timestamp: new Date().toISOString(),
-          })
-        }
-      }
-    }
-
-    // Strategy 2: Directly find all Claude responses that might have been missed
-    const allClaudeResponses = document.querySelectorAll(
-      '.font-claude-response, [class*="font-claude-response"]',
-    )
-    for (const claudeEl of allClaudeResponses) {
-      const text = /** @type {HTMLElement} */ (claudeEl).innerText?.trim()
-      if (text && !processedTexts.has(text)) {
-        // Check this isn't just a fragment we've already captured
-        let isNew = true
-        for (const existing of messages) {
-          if (
-            existing.role === 'Claude' &&
-            existing.content.includes(text.slice(0, 50))
-          ) {
-            isNew = false
-            break
-          }
-        }
-        if (isNew) {
-          processedTexts.add(text)
-          messages.push({
-            role: 'Claude',
-            content: text,
-            timestamp: new Date().toISOString(),
-          })
-        }
-      }
-    }
-
-    // Strategy 3: Look for streaming response containers (Claude's responses often have data-is-streaming)
-    const streamingContainers = document.querySelectorAll('[data-is-streaming]')
-    for (const container of streamingContainers) {
-      const claudeEl = container.querySelector('.font-claude-response')
-      if (claudeEl) {
-        const text = /** @type {HTMLElement} */ (claudeEl).innerText?.trim()
-        if (text && !processedTexts.has(text)) {
-          // Check if this is new
-          let isNew = true
-          for (const existing of messages) {
-            if (
-              existing.role === 'Claude' &&
-              existing.content.includes(text.slice(0, 50))
-            ) {
-              isNew = false
-              break
-            }
-          }
-          if (isNew) {
-            processedTexts.add(text)
-            messages.push({
-              role: 'Claude',
-              content: text,
-              timestamp: new Date().toISOString(),
-            })
-          }
-        }
-      }
+      messages.push({
+        role: message.role,
+        content,
+        timestamp: new Date().toISOString(),
+      })
     }
 
     return {
